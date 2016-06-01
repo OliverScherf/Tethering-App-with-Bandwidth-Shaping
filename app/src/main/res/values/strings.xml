@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">Tethering With Bandwidth Shaping</string>
+    <string name="action_settings">Settings</string>
+    <string name="section_format">Hello World from section: %1$d</string>
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="wifi_tethering_switch">Wifi Tethering</string>
+    <string name="wifi_password_hint">Password</string>
+    <string name="wifi_ssid_hint">SSID (name of HotSpot)</string>
+    <string name="wifi_hide_ssid_check_box">Hide SSID</string>
+    <string-array name="wifi_security_spinner">
+        <item>Open/Unsecure</item>
+        <item>WPA2 PSK</item>
+    </string-array>
+    <string-array name="wifi_broadcast_channel_spinner">
+        <item>Automatic</item>
+        <item>1</item>
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
+        <item>6</item>
+        <item>7</item>
+        <item>8</item>
+        <item>9</item>
+        <item>10</item>
+        <item>11</item>
+    </string-array>
+
+
+
+</resources>

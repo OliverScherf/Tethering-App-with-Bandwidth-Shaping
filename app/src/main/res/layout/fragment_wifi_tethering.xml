@@ -1,0 +1,62 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="layout.WifiTetheringFragment">
+
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true">
+
+        <Switch
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/wifi_tethering_switch"
+            android:layout_margin="@dimen/appbar_padding_top"
+            android:id="@+id/wifi_tethering_switch" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/wifi_ssid_edit_text"
+            android:hint="@string/wifi_ssid_hint"
+            android:inputType="text" />
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/wifi_password_edit_text"
+            android:hint="@string/wifi_password_hint"
+            android:inputType="textPassword" />
+
+        <CheckBox
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/wifi_hide_ssid_check_box"
+            android:id="@+id/wifi_hide_ssid_check_box" />
+
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/wifi_encryption_spinner"
+            android:spinnerMode="dropdown"
+            android:entries="@array/wifi_security_spinner"
+            android:layout_gravity="center_horizontal" />
+
+        <Spinner
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/wifi_broadcast_channel_spinner"
+            android:spinnerMode="dropdown"
+            android:entries="@array/wifi_broadcast_channel_spinner"
+            android:layout_gravity="center_horizontal" />
+    </LinearLayout>
+
+
+
+</RelativeLayout>
