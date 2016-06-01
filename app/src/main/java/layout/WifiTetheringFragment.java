@@ -20,6 +20,7 @@ public class WifiTetheringFragment extends Fragment {
     WifiTethering wifiTethering;
     Switch wifiSwitch;
     EditText passwordEditText;
+    View view;
 
     public WifiTetheringFragment() {
     }
@@ -28,17 +29,17 @@ public class WifiTetheringFragment extends Fragment {
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-
+        this.view = inflater.inflate(R.layout.fragment_wifi_tethering, container, false);
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_wifi_tethering, container, false);
+        return view;
     }
 
     @Override
     public void onStart() {
         super.onStart();
-        this.wifiTethering = new WifiTethering(this.getView());
-        this.passwordEditText = (EditText) this.getView().findViewById(R.id.wifi_password_edit_text);
-        this.wifiSwitch = (Switch) this.getView().findViewById(R.id.wifi_tethering_switch);
+        this.wifiTethering = new WifiTethering(this.view);
+        this.passwordEditText = (EditText) this.view.findViewById(R.id.wifi_password_edit_text);
+        this.wifiSwitch = (Switch) this.view.findViewById(R.id.wifi_tethering_switch);
         this.wifiSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
