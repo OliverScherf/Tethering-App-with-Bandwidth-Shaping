@@ -7,6 +7,8 @@
     <string name="wifi_password_hint">Password</string>
     <string name="wifi_ssid_hint">SSID (name of HotSpot)</string>
     <string name="wifi_hide_ssid_check_box">Hide SSID</string>
+    <string name="usb_tethering_switch">USB Tethering</string>
+    <string name="bluetooth_tethering_switch">Bluetooth Tethering</string>
     <string-array name="wifi_security_spinner">
         <item>Open/Unsecure</item>
         <item>WPA2 PSK</item>

@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/wifi_password_edit_text"
             android:hint="@string/wifi_password_hint"
-            android:inputType="textPassword" />
+            android:inputType="text" />
 
         <CheckBox
             android:layout_width="match_parent"
@@ -55,6 +55,13 @@
             android:spinnerMode="dropdown"
             android:entries="@array/wifi_broadcast_channel_spinner"
             android:layout_gravity="center_horizontal" />
+
+        <EditText
+            android:id="@+id/debug_messages"
+            android:text="VER3"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"/>
+
     </LinearLayout>
 
 

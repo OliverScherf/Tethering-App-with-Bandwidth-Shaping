@@ -3,10 +3,9 @@ package com.oliverscherf.tetheringwithbandwidthshaping;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
-import android.util.Log;
 
 import layout.BluetoothTetheringFragment;
-import layout.PlaceholderFragment;
+import layout.UsbTetheringFragment;
 import layout.WifiTetheringFragment;
 
 /**
@@ -17,28 +16,28 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
     private WifiTetheringFragment wifiTetheringFragment;
     private BluetoothTetheringFragment bluetoothTetheringFragment;
+    private UsbTetheringFragment usbTetheringFragment;
 
 
     public SectionsPagerAdapter(FragmentManager fm) {
         super(fm);
         this.wifiTetheringFragment = new WifiTetheringFragment();
         this.bluetoothTetheringFragment = new BluetoothTetheringFragment();
+        this.usbTetheringFragment = new UsbTetheringFragment();
     }
 
     @Override
     public Fragment getItem(int position) {
-        Log.d("SectionsPagerAdapter", "getItem");
         // getItem is called to instantiate the fragment for the given page.
         //Wifi
         if (position == 0) {
-            Log.d("SectionsPagerAdapter", "getItem: WifiTethering");
             return this.wifiTetheringFragment;
         //Bluetooth
         } else if (position == 1) {
-            Log.d("SectionsPagerAdapter", "getItem: BluetoothTethering");
+            return this.usbTetheringFragment;
+        } else if (position == 2) {
             return this.bluetoothTetheringFragment;
         } else {
-            Log.d("SectionsPagerAdapter", "getItem: Position war nicht 0 und nicht 1");
             return null;
         }
 
@@ -47,9 +46,7 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public int getCount() {
-        Log.d("SectionsPagerAdapter", "getCount");
-        // Show 3 total pages.
-        return 2;
+        return 3;
     }
 
     /*@Override

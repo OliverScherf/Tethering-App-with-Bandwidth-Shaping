@@ -31,13 +31,6 @@ public class WifiTethering implements Tetherable, Loggable {
 
     public WifiTethering(View view) {
         this.view = view;
-        if (view == null) {
-            this.log("View war null");
-        }
-        if (view.getContext() == null) {
-            this.log("Context war null");
-        }
-        this.config = new WifiConfiguration();
         this.wifiManager = (WifiManager) this.view.getContext().getSystemService(Context.WIFI_SERVICE);
         Method[] methods = this.wifiManager.getClass().getDeclaredMethods();
         for (Method method : methods) {
@@ -55,33 +48,74 @@ public class WifiTethering implements Tetherable, Loggable {
                 this.err("Exception while iterate though the methods of the WifiManager. ", ex);
             }
         }
+        this.setInitialWifiSettings();
+        this.debugPrintConfig();
+    }
+
+    private void debugPrintConfig() {
+        EditText debugTextArea = ((EditText) this.view.findViewById(R.id.debug_messages));
+        //debugTextArea.setText("");
+        String configContent = "SSID: " + this.config.SSID + '\n';
+        configContent += "Key: " + this.config.preSharedKey + '\n';
+        configContent += "hiddenSSID: " + this.config.hiddenSSID + '\n';
+        debugTextArea.append(configContent);
     }
 
     @Override
     public void startTethering() {
         this.updateConfig();
+        this.debugPrintConfig();
         try {
             this.setWifiApEnabled.invoke(this.wifiManager, this.config, true);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            this.err("Reflection Error", e);
         } catch (InvocationTargetException e) {
-            e.printStackTrace();
+            this.err("Reflection Error", e);
         }
     }
 
+    private void setInitialWifiSettings() {
+        try {
+            this.config = (WifiConfiguration) this.getWifiApConfiguration.invoke(this.wifiManager);
+        } catch (IllegalAccessException e) {
+            this.err("Reflection Error", e);
+        } catch (InvocationTargetException e) {
+            this.err("Reflection Error", e);
+        }
+        //((Switch) this.view.findViewById(R.id.wifi_tethering_switch)).setChecked(this.getTetheringStatus() == WifiManager.WIFI_STATE_ENABLED
+        //        || this.getTetheringStatus() == WifiManager.WIFI_STATE_ENABLING);
+        ((EditText) this.view.findViewById(R.id.wifi_ssid_edit_text)).setText(this.config.SSID);
+        ((EditText) this.view.findViewById(R.id.wifi_password_edit_text)).setText(this.config.preSharedKey);
+        ((CheckBox) this.view.findViewById(R.id.wifi_hide_ssid_check_box)).setChecked(this.config.hiddenSSID);
+    }
+
+    // TODO: Config funktioniert noch nicht bei Verschlüsselung, der Rest läuft soweit
     private void updateConfig() {
-        this.config.SSID = ((EditText) this.view.findViewById(R.id.wifi_ssid_edit_text)).getText().toString();
+        this.config.SSID = "\"" +((EditText) this.view.findViewById(R.id.wifi_ssid_edit_text)).getText().toString() +  "\"";
         this.config.hiddenSSID = ((CheckBox) this.view.findViewById(R.id.wifi_hide_ssid_check_box)).isChecked();
+
+
         String encryptionType = ((Spinner) this.view.findViewById(R.id.wifi_encryption_spinner)).getSelectedItem().toString();
         String[] encryptionTypes = this.view.getContext().getResources().getStringArray(R.array.wifi_security_spinner);
         if (encryptionType.equals(encryptionTypes[0])) {
             // Open/Unsecure
+            this.log("Open/Unsecure");
             this.config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
         } else if (encryptionType.equals(encryptionTypes[1])) {
             // WPA2 PSK
+            this.log("WPA2 PSK");
             this.config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+            this.config.preSharedKey = "\"" + ((EditText) this.view.findViewById(R.id.wifi_password_edit_text)).toString() + "\"";
+            this.config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
+            this.config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
+            this.config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+            this.config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
+            this.config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
+            this.config.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
         }
-        this.config.preSharedKey = ((EditText) this.view.findViewById(R.id.wifi_password_edit_text)).toString();
+
+
+        this.wifiManager.saveConfiguration();
         // TODO: Broadcast Channels
     }
 
@@ -90,9 +124,9 @@ public class WifiTethering implements Tetherable, Loggable {
         try {
             this.setWifiApEnabled.invoke(this.wifiManager, null, false);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            this.err("Reflection Error", e);
         } catch (InvocationTargetException e) {
-            e.printStackTrace();
+            this.err("Reflection Error", e);
         }
     }
 
@@ -101,9 +135,9 @@ public class WifiTethering implements Tetherable, Loggable {
         try {
             return (Integer) this.getWifiApState.invoke(this.wifiManager);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            this.err("Reflection Error", e);
         } catch (InvocationTargetException e) {
-            e.printStackTrace();
+            this.err("Reflection Error", e);
         }
         return -1;
     }
@@ -111,6 +145,9 @@ public class WifiTethering implements Tetherable, Loggable {
     @Override
     public void log(String msg) {
         Log.d("WifiTethering", msg);
+        EditText debugTextArea = ((EditText) this.view.findViewById(R.id.debug_messages));
+        debugTextArea.append(msg + '\n');
+
     }
 
     @Override

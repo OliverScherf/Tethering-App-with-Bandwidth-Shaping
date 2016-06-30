@@ -2,7 +2,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="layout.BluetoothTetheringFragment">
+    tools:context="layout.UsbTetheringFragment">
 
 
     <LinearLayout
@@ -16,9 +16,9 @@
         <Switch
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/bluetooth_tethering_switch"
+            android:text="@string/usb_tethering_switch"
             android:layout_margin="@dimen/appbar_padding_top"
-            android:id="@+id/bluetooth_tethering_switch" />
+            android:id="@+id/usb_tethering_switch" />
 
         <EditText
             android:id="@+id/debug_messages"
