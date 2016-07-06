@@ -25,8 +25,6 @@ public class BluetoothTethering implements Tetherable, Loggable {
     public BluetoothTethering(Context context) {
         this.context = context;
         this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        this.bluetoothAdapter.enable();
-        String sClassName = "android.bluetooth.BluetoothPan";
         try {
             Class classBluetoothPan = Class.forName("android.bluetooth.BluetoothPan");
             this.isTetheringOn = classBluetoothPan.getDeclaredMethod("isTetheringOn");
@@ -41,7 +39,12 @@ public class BluetoothTethering implements Tetherable, Loggable {
 
     @Override
     public void startTethering() {
+        Toast.makeText(this.context, "Turning Bluetooth tethering on", Toast.LENGTH_SHORT).show();
         try {
+            if (!this.bluetoothAdapter.isEnabled()) {
+                this.bluetoothAdapter.enable();
+                Thread.sleep(100);
+            }
             this.bluetoothPanConstructor.newInstance(this.context, new BluetoothPanServiceListener(this.context, true));
         } catch (InstantiationException e) {
             this.err("Fehler beim Instanz erzeugen vom BluetoothPan", e);
@@ -49,11 +52,14 @@ public class BluetoothTethering implements Tetherable, Loggable {
             this.err("Fehler beim Instanz erzeugen vom BluetoothPan", e);
         } catch (InvocationTargetException e) {
             this.err("Fehler beim Instanz erzeugen vom BluetoothPan", e);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
     @Override
     public void stopTethering() {
+        Toast.makeText(context, "Turning Bluetooth tethering off", Toast.LENGTH_SHORT).show();
         try {
             this.bluetoothPanConstructor.newInstance(this.context, new BluetoothPanServiceListener(this.context, false));
         } catch (InstantiationException e) {
@@ -96,11 +102,6 @@ class BluetoothPanServiceListener implements BluetoothProfile.ServiceListener, L
         Log.i("MyApp", "BTPan proxy connected");
         try {
             proxy.getClass().getMethod("setBluetoothTethering", new Class[]{Boolean.TYPE}).invoke(proxy, new Object[]{Boolean.valueOf(this.enable)});
-            if (this.enable) {
-                Toast.makeText(this.context, "Turning bluetooth tethering on", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(context, "Turning bluetooth tethering on", Toast.LENGTH_SHORT).show();
-            }
         } catch (Exception e) {
             this.err("Fehler beim Aktivieren/Deaktivieren des Bluetooth Tetherings", e);
         }

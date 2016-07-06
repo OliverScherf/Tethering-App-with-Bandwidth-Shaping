@@ -1,6 +1,7 @@
 package tethering;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiConfiguration;
 import android.os.IBinder;
@@ -66,8 +67,10 @@ public class UsbTethering implements Tetherable, Loggable {
 
     @Override
     public void startTethering() {
-
-        try {
+        Intent tetherSettings = new Intent();
+        tetherSettings.setClassName("com.android.settings", "com.android.settings.TetherSettings");
+        this.view.getContext().startActivity(tetherSettings);
+        /*try {
             for (String inf : this.usbInterfaces) {
                 this.log("Versuche USB Tethering zu auf " + inf +  " zu starten");
                 //this.log("Return: " + (Integer) this.usbTether.invoke(this.connectivityManager, inf));
@@ -85,12 +88,14 @@ public class UsbTethering implements Tetherable, Loggable {
             this.err("Reflection Error", e);
         } catch (InvocationTargetException e) {
             this.err("Reflection Error", e);
-        }
+        }*/
     }
 
     @Override
     public void stopTethering() {
-
+        Intent tetherSettings = new Intent();
+        tetherSettings.setClassName("com.android.settings", "com.android.settings.TetherSettings");
+        this.view.getContext().startActivity(tetherSettings);
     }
 
     @Override

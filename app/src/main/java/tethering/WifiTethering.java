@@ -9,6 +9,7 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Switch;
+import android.widget.Toast;
 
 import com.oliverscherf.tetheringwithbandwidthshaping.R;
 
@@ -63,6 +64,7 @@ public class WifiTethering implements Tetherable, Loggable {
 
     @Override
     public void startTethering() {
+        Toast.makeText(this.view.getContext(), "Turning WLAN tethering on", Toast.LENGTH_SHORT).show();
         this.updateConfig();
         //this.debugPrintConfig();
         try {
@@ -149,6 +151,7 @@ public class WifiTethering implements Tetherable, Loggable {
 
     @Override
     public void stopTethering() {
+        Toast.makeText(this.view.getContext(), "Turning WLAN tethering off", Toast.LENGTH_SHORT).show();
         try {
             this.setWifiApEnabled.invoke(this.wifiManager, null, false);
         } catch (IllegalAccessException e) {
