@@ -8,13 +8,18 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Spinner;
+import android.widget.Switch;
 
 import com.oliverscherf.tetheringwithbandwidthshaping.R;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import utils.Loggable;
+import utils.ShellExecutor;
 
 /**
  * Created by Oliver on 25.05.2016.
@@ -53,18 +58,13 @@ public class WifiTethering implements Tetherable, Loggable {
     }
 
     private void debugPrintConfig() {
-        EditText debugTextArea = ((EditText) this.view.findViewById(R.id.debug_messages));
-        //debugTextArea.setText("");
-        String configContent = "SSID: " + this.config.SSID + '\n';
-        configContent += "Key: " + this.config.preSharedKey + '\n';
-        configContent += "hiddenSSID: " + this.config.hiddenSSID + '\n';
-        debugTextArea.append(configContent);
+        /*this.log(this.config.toString());*/
     }
 
     @Override
     public void startTethering() {
         this.updateConfig();
-        this.debugPrintConfig();
+        //this.debugPrintConfig();
         try {
             this.setWifiApEnabled.invoke(this.wifiManager, this.config, true);
         } catch (IllegalAccessException e) {
@@ -77,46 +77,74 @@ public class WifiTethering implements Tetherable, Loggable {
     private void setInitialWifiSettings() {
         try {
             this.config = (WifiConfiguration) this.getWifiApConfiguration.invoke(this.wifiManager);
+            this.debugPrintConfig();
         } catch (IllegalAccessException e) {
             this.err("Reflection Error", e);
         } catch (InvocationTargetException e) {
             this.err("Reflection Error", e);
         }
-        //((Switch) this.view.findViewById(R.id.wifi_tethering_switch)).setChecked(this.getTetheringStatus() == WifiManager.WIFI_STATE_ENABLED
-        //        || this.getTetheringStatus() == WifiManager.WIFI_STATE_ENABLING);
+        ((Switch) this.view.findViewById(R.id.wifi_tethering_switch)).setChecked(this.getTetheringStatus() == WifiManager.WIFI_STATE_ENABLED
+                || this.getTetheringStatus() == WifiManager.WIFI_STATE_ENABLING);
         ((EditText) this.view.findViewById(R.id.wifi_ssid_edit_text)).setText(this.config.SSID);
         ((EditText) this.view.findViewById(R.id.wifi_password_edit_text)).setText(this.config.preSharedKey);
         ((CheckBox) this.view.findViewById(R.id.wifi_hide_ssid_check_box)).setChecked(this.config.hiddenSSID);
     }
 
-    // TODO: Config funktioniert noch nicht bei Verschlüsselung, der Rest läuft soweit
     private void updateConfig() {
-        this.config.SSID = "\"" +((EditText) this.view.findViewById(R.id.wifi_ssid_edit_text)).getText().toString() +  "\"";
+        this.config.SSID = ((EditText) this.view.findViewById(R.id.wifi_ssid_edit_text)).getText().toString();
         this.config.hiddenSSID = ((CheckBox) this.view.findViewById(R.id.wifi_hide_ssid_check_box)).isChecked();
-
-
-        String encryptionType = ((Spinner) this.view.findViewById(R.id.wifi_encryption_spinner)).getSelectedItem().toString();
-        String[] encryptionTypes = this.view.getContext().getResources().getStringArray(R.array.wifi_security_spinner);
-        if (encryptionType.equals(encryptionTypes[0])) {
+        String chosenEncryptionType = ((Spinner) this.view.findViewById(R.id.wifi_encryption_spinner)).getSelectedItem().toString();
+        String[] availableEncryptionTypes = this.view.getContext().getResources().getStringArray(R.array.wifi_security_spinner);
+        if (chosenEncryptionType.equals(availableEncryptionTypes[0])) {
             // Open/Unsecure
             this.log("Open/Unsecure");
+            this.config.allowedKeyManagement.set(4, false);
             this.config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
-        } else if (encryptionType.equals(encryptionTypes[1])) {
+        } else if (chosenEncryptionType.equals(availableEncryptionTypes[1])) {
             // WPA2 PSK
             this.log("WPA2 PSK");
-            this.config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
-            this.config.preSharedKey = "\"" + ((EditText) this.view.findViewById(R.id.wifi_password_edit_text)).toString() + "\"";
-            this.config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
-            this.config.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
-            this.config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
-            this.config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
-            this.config.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
-            this.config.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
+            this.config.preSharedKey = ((EditText) this.view.findViewById(R.id.wifi_password_edit_text)).getText().toString();
+            //this.config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+            //this.config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
+            // TODO: 4 als Konstante einführen. 4 ist WPA2_PSK Konstante im WifiConfiguration.KeyMgmt, jedoch kommt ein Compiler error wenn ich versuche die Konstante zu verwenden
+            this.config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE, false);
+            this.config.allowedKeyManagement.set(4);
         }
 
+        /*
+        int channelNumber = -1;
+        Spinner broadcastChannelSpinner = (Spinner) this.view.findViewById(R.id.wifi_broadcast_channel_spinner);
+         if (broadcastChannelSpinner.getSelectedItem().toString().equals("Auto")) {
+            channelNumber = 0;
+        } else {
+             channelNumber = Integer.parseInt(broadcastChannelSpinner.getSelectedItem().toString());
+         }
+        if (channelNumber != -1) {
+            this.setBroadcastChannel(channelNumber);
+        } else {
+            this.err("Fehler beim Channel Number bekommen.", null);
+        }
 
-        this.wifiManager.saveConfiguration();
-        // TODO: Broadcast Channels
+        this.wifiManager.saveConfiguration();*/
+    }
+
+    private void setBroadcastChannel(int channelNumber) {
+        try {
+            String configContent = ShellExecutor.execute("cat /data/misc/wifi/testing.conf");
+            String[] lines = configContent.split("\n");
+            ShellExecutor.execute("rm /data/misc/wifi/written.conf");
+            ShellExecutor.execute("touch /data/misc/wifi/written.conf");
+            for(String line : lines) {
+                this.log("Lines line:" + line.toString());
+                this.log("Response: " + ShellExecutor.execute("echo " + line + " >> /data/misc/wifi/written.conf"));
+            }
+        } catch (IOException e) {
+            this.err("",e);
+        } catch (InterruptedException e) {
+            this.err("", e);
+        } catch (Exception e) {
+            this.err("",e);
+        }
     }
 
     @Override

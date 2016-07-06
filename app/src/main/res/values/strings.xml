@@ -14,7 +14,7 @@
         <item>WPA2 PSK</item>
     </string-array>
     <string-array name="wifi_broadcast_channel_spinner">
-        <item>Automatic</item>
+        <item>Auto</item>
         <item>1</item>
         <item>2</item>
         <item>3</item>

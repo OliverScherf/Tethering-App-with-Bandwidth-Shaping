@@ -3,6 +3,7 @@ package tethering;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiConfiguration;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.CheckBox;
@@ -11,6 +12,7 @@ import android.widget.Spinner;
 
 import com.oliverscherf.tetheringwithbandwidthshaping.R;
 
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -32,8 +34,10 @@ public class UsbTethering implements Tetherable, Loggable {
         this.connectivityManager = connectivityManager;
         for (Method method : this.connectivityManager.getClass().getDeclaredMethods()) {
             if (method.getName().equals("tether")) {
+                this.log("Methode tether gefunden");
                 //    method.invoke(systemService, "usb0");
                 this.usbTether = method;
+                this.usbTether.setAccessible(true);
             } else if(method.getName().equals("getTetherableUsbRegexs")) {
                 try {
                     this.usbInterfaces = (String[]) method.invoke(connectivityManager);
@@ -66,58 +70,38 @@ public class UsbTethering implements Tetherable, Loggable {
         try {
             for (String inf : this.usbInterfaces) {
                 this.log("Versuche USB Tethering zu auf " + inf +  " zu starten");
-                this.usbTether.invoke(this.connectivityManager, inf);
+                //this.log("Return: " + (Integer) this.usbTether.invoke(this.connectivityManager, inf));
+                this.log("Return: " + (Integer) this.usbTether.invoke(inf));
             }
             this.log("Versuche USB Tethering zu auf " + "rndis0" +  " zu starten");
-            this.usbTether.invoke(this.connectivityManager, "rndis0");
-            this.log("Versuche USB Tethering zu auf " + "usb0" +  " zu starten");
-            this.usbTether.invoke(this.connectivityManager, "usb0");
-            this.log("Versuche USB Tethering zu auf " + "ncm0" +  " zu starten");
-            this.usbTether.invoke(this.connectivityManager, "ncm0");
+            //this.log("Return: " + (Integer) this.usbTether.invoke(this.connectivityManager, "rndis0"));
+            this.log("Return: " + (Integer) this.usbTether.invoke("rndis0"));
+            //this.log("Versuche USB Tethering zu auf " + "usb0" +  " zu starten");
+            //this.log("Return: " + (Integer) this.usbTether.invoke(this.connectivityManager, "usb0"));
+            //this.log("Versuche USB Tethering zu auf " + "ncm0" +  " zu starten");
+            //this.log("Return: " + (Integer) this.usbTether.invoke(this.connectivityManager, "ncm0"));
 
         } catch (IllegalAccessException e) {
             this.err("Reflection Error", e);
         } catch (InvocationTargetException e) {
             this.err("Reflection Error", e);
         }
-    }
-
-    private void setInitialWifiSettings() {
-       /* try {
-            this.config = (WifiConfiguration) this.getWifiApConfiguration.invoke(this.wifiManager);
-        } catch (IllegalAccessException e) {
-            this.err("Reflection Error", e);
-        } catch (InvocationTargetException e) {
-            this.err("Reflection Error", e);
-        }
-        //((Switch) this.view.findViewById(R.id.wifi_tethering_switch)).setChecked(this.getTetheringStatus() == WifiManager.WIFI_STATE_ENABLED
-        //        || this.getTetheringStatus() == WifiManager.WIFI_STATE_ENABLING);
-        ((EditText) this.view.findViewById(R.id.wifi_ssid_edit_text)).setText(this.config.SSID);
-        ((EditText) this.view.findViewById(R.id.wifi_password_edit_text)).setText(this.config.preSharedKey);
-        ((CheckBox) this.view.findViewById(R.id.wifi_hide_ssid_check_box)).setChecked(this.config.hiddenSSID); */
     }
 
     @Override
     public void stopTethering() {
-        /* try {
-            this.setWifiApEnabled.invoke(this.wifiManager, null, false);
-        } catch (IllegalAccessException e) {
-            this.err("Reflection Error", e);
-        } catch (InvocationTargetException e) {
-            this.err("Reflection Error", e);
-        } */
+
     }
 
     @Override
     public int getTetheringStatus() {
-        /* try {
-            return (Integer) this.getWifiApState.invoke(this.wifiManager);
+        /*try {
+            this.log("USB Tether Status: " + (Integer) this.getWifiApState.invoke(this.wifiManager));
         } catch (IllegalAccessException e) {
             this.err("Reflection Error", e);
         } catch (InvocationTargetException e) {
             this.err("Reflection Error", e);
-        }
-        return -1; */
+        }*/
         return -1;
     }
 

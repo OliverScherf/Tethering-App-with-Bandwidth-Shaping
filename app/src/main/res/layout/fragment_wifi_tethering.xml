@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:id="@+id/wifi_password_edit_text"
             android:hint="@string/wifi_password_hint"
-            android:inputType="text" />
+            android:inputType="textPassword" />
 
         <CheckBox
             android:layout_width="match_parent"
@@ -58,7 +58,7 @@
 
         <EditText
             android:id="@+id/debug_messages"
-            android:text="VER3"
+            android:text="VER10"
             android:layout_width="match_parent"
             android:layout_height="match_parent"/>
 
