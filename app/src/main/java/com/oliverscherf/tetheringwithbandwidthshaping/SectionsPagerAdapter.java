@@ -5,6 +5,7 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 
 import layout.BluetoothTetheringFragment;
+import layout.TrafficControlFragment;
 import layout.UsbTetheringFragment;
 import layout.WifiTetheringFragment;
 
@@ -17,6 +18,7 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
     private WifiTetheringFragment wifiTetheringFragment;
     private BluetoothTetheringFragment bluetoothTetheringFragment;
     private UsbTetheringFragment usbTetheringFragment;
+    private TrafficControlFragment trafficControlFragment;
 
 
     public SectionsPagerAdapter(FragmentManager fm) {
@@ -24,6 +26,7 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
         this.wifiTetheringFragment = new WifiTetheringFragment();
         this.bluetoothTetheringFragment = new BluetoothTetheringFragment();
         this.usbTetheringFragment = new UsbTetheringFragment();
+        this.trafficControlFragment = new TrafficControlFragment();
     }
 
     @Override
@@ -31,11 +34,13 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
         // getItem is called to instantiate the fragment for the given page.
         //Wifi
         if (position == 0) {
+            return this.trafficControlFragment;
+        } else if (position == 1) {
             return this.wifiTetheringFragment;
         //Bluetooth
-        } else if (position == 1) {
-            return this.usbTetheringFragment;
         } else if (position == 2) {
+            return this.usbTetheringFragment;
+        } else if (position == 3) {
             return this.bluetoothTetheringFragment;
         } else {
             return null;
@@ -46,7 +51,7 @@ public class SectionsPagerAdapter extends FragmentPagerAdapter {
 
     @Override
     public int getCount() {
-        return 3;
+        return 4;
     }
 
     /*@Override

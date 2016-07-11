@@ -9,6 +9,7 @@
     <string name="wifi_hide_ssid_check_box">Hide SSID</string>
     <string name="usb_tethering_switch">USB Tethering</string>
     <string name="bluetooth_tethering_switch">Bluetooth Tethering</string>
+    <string name="connected_devices_refresh_button">Refresh</string>
     <string-array name="wifi_security_spinner">
         <item>Open/Unsecure</item>
         <item>WPA2 PSK</item>
