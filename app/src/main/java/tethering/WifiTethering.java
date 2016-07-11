@@ -13,12 +13,11 @@ import android.widget.Toast;
 
 import com.oliverscherf.tetheringwithbandwidthshaping.R;
 
-import java.io.IOException;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import utils.Loggable;
-import utils.ShellExecutor;
 
 /**
  * Created by Oliver on 25.05.2016.
@@ -31,7 +30,6 @@ public class WifiTethering implements Tetherable, Loggable {
     private Method isWifiApEnabled;
     private Method getWifiApState;
     private Method getWifiApConfiguration;
-    private Method setFrequencyBand; // public void setFrequencyBand(int band, boolean persist)
     private View view;
 
     public WifiTethering(View view) {
@@ -48,8 +46,6 @@ public class WifiTethering implements Tetherable, Loggable {
                     this.getWifiApState = method;
                 } else if (method.getName().equals("getWifiApConfiguration")) {
                     this.getWifiApConfiguration = method;
-                } else if (method.getName().equals("setFrequencyBand")) {
-                    this.setFrequencyBand = method;
                 }
             } catch (Exception ex) {
                 this.err("Exception while iterate though the methods of the WifiManager. ", ex);
@@ -60,7 +56,7 @@ public class WifiTethering implements Tetherable, Loggable {
     }
 
     private void debugPrintConfig() {
-        /*this.log(this.config.toString());*/
+        this.log(this.config.toString());
     }
 
     @Override
@@ -93,9 +89,7 @@ public class WifiTethering implements Tetherable, Loggable {
         ((CheckBox) this.view.findViewById(R.id.wifi_hide_ssid_check_box)).setChecked(this.config.hiddenSSID);
     }
 
-    private void updateConfig() {
-        this.config.SSID = ((EditText) this.view.findViewById(R.id.wifi_ssid_edit_text)).getText().toString();
-        this.config.hiddenSSID = ((CheckBox) this.view.findViewById(R.id.wifi_hide_ssid_check_box)).isChecked();
+    private void updateEncryptionSettings() {
         String chosenEncryptionType = ((Spinner) this.view.findViewById(R.id.wifi_encryption_spinner)).getSelectedItem().toString();
         String[] availableEncryptionTypes = this.view.getContext().getResources().getStringArray(R.array.wifi_security_spinner);
         if (chosenEncryptionType.equals(availableEncryptionTypes[0])) {
@@ -112,43 +106,39 @@ public class WifiTethering implements Tetherable, Loggable {
             // TODO: 4 als Konstante einführen. 4 ist WPA2_PSK Konstante im WifiConfiguration.KeyMgmt, jedoch kommt ein Compiler error wenn ich versuche die Konstante zu verwenden
             this.config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE, false);
             this.config.allowedKeyManagement.set(4);
-            //
         }
+    }
 
-        /*
+    private void updateBroadcastChannel() {
         int channelNumber = -1;
         Spinner broadcastChannelSpinner = (Spinner) this.view.findViewById(R.id.wifi_broadcast_channel_spinner);
-         if (broadcastChannelSpinner.getSelectedItem().toString().equals("Auto")) {
+        if (broadcastChannelSpinner.getSelectedItem().toString().equals("Auto")) {
             channelNumber = 0;
         } else {
-             channelNumber = Integer.parseInt(broadcastChannelSpinner.getSelectedItem().toString());
-         }
+            channelNumber = Integer.parseInt(broadcastChannelSpinner.getSelectedItem().toString());
+        }
         if (channelNumber != -1) {
-            this.setBroadcastChannel(channelNumber);
+            for (Field f : this.config.getClass().getFields()) {
+                this.log(f.getName());
+                if (f.getName().equals("channel")) {
+                    try {
+                        f.setInt(this.config, channelNumber);
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         } else {
             this.err("Fehler beim Channel Number bekommen.", null);
         }
-
-        this.wifiManager.saveConfiguration();*/
     }
 
-    private void setBroadcastChannel(int channelNumber) {
-    /*    try {
-            String configContent = ShellExecutor.executeRoot("cat /data/misc/wifi/testing.conf");
-            String[] lines = configContent.split("\n");
-            ShellExecutor.executeRoot("rm /data/misc/wifi/written.conf");
-            ShellExecutor.executeRoot("touch /data/misc/wifi/written.conf");
-            for(String line : lines) {
-                this.log("Lines line:" + line.toString());
-                this.log("Response: " + ShellExecutor.executeRoot("echo " + line + " >> /data/misc/wifi/written.conf"));
-            }
-        } catch (IOException e) {
-            this.err("",e);
-        } catch (InterruptedException e) {
-            this.err("", e);
-        } catch (Exception e) {
-            this.err("",e);
-        } */
+    private void updateConfig() {
+        this.config.SSID = ((EditText) this.view.findViewById(R.id.wifi_ssid_edit_text)).getText().toString();
+        this.config.hiddenSSID = ((CheckBox) this.view.findViewById(R.id.wifi_hide_ssid_check_box)).isChecked();
+        this.updateEncryptionSettings();
+        this.updateBroadcastChannel();
+        this.wifiManager.saveConfiguration();
     }
 
     @Override
