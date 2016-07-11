@@ -1,15 +1,11 @@
 package tethering;
 
 import android.content.Context;
-import android.content.Intent;
+import android.hardware.usb.UsbManager;
 import android.net.ConnectivityManager;
-import android.net.wifi.WifiConfiguration;
-import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
-import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.Spinner;
 
 import com.oliverscherf.tetheringwithbandwidthshaping.R;
 
@@ -18,6 +14,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import utils.Loggable;
+import utils.ShellExecutor;
 
 /**
  * Created by Oliver on 25.05.2016.
@@ -25,20 +22,23 @@ import utils.Loggable;
 public class UsbTethering implements Tetherable, Loggable {
 
 
-    private Method usbTether;
+    private Method tether;
+    private Method untether;
     private View view;
     private ConnectivityManager connectivityManager;
     private String[] usbInterfaces;
+    private String oldUsbFunction;
+
+
 
     public UsbTethering(View view, ConnectivityManager connectivityManager) {
         this.view = view;
+        this.log(connectivityManager.getClass().getName());
         this.connectivityManager = connectivityManager;
         for (Method method : this.connectivityManager.getClass().getDeclaredMethods()) {
+            //if (method.getName().equals("setUsbTethering")) {
             if (method.getName().equals("tether")) {
-                this.log("Methode tether gefunden");
-                //    method.invoke(systemService, "usb0");
-                this.usbTether = method;
-                this.usbTether.setAccessible(true);
+                this.tether = method;
             } else if(method.getName().equals("getTetherableUsbRegexs")) {
                 try {
                     this.usbInterfaces = (String[]) method.invoke(connectivityManager);
@@ -49,6 +49,8 @@ public class UsbTethering implements Tetherable, Loggable {
                 } catch (Exception e) {
                     this.err("Other error", e);
                 }
+            } else if(method.getName().equals("untether")) {
+                this.untether = method;
             }
         }
         for (String curInterface : usbInterfaces) {
@@ -67,35 +69,65 @@ public class UsbTethering implements Tetherable, Loggable {
 
     @Override
     public void startTethering() {
-        Intent tetherSettings = new Intent();
-        tetherSettings.setClassName("com.android.settings", "com.android.settings.TetherSettings");
-        this.view.getContext().startActivity(tetherSettings);
-        /*try {
-            for (String inf : this.usbInterfaces) {
-                this.log("Versuche USB Tethering zu auf " + inf +  " zu starten");
-                //this.log("Return: " + (Integer) this.usbTether.invoke(this.connectivityManager, inf));
-                this.log("Return: " + (Integer) this.usbTether.invoke(inf));
+        //Intent tetherSettings = new Intent();
+        //tetherSettings.setClassName("com.android.settings", "com.android.settings.TetherSettings");
+        //this.view.getContext().startActivity(tetherSettings);
+        try {
+            // alten stand saven
+            String execRet = ShellExecutor.getSingleton().executeRoot("getprop sys.usb.config");
+            if (execRet.contains("mtp")) {
+                this.oldUsbFunction = "mtp";
+            } else if (execRet.contains("ptp")) {
+                this.oldUsbFunction = "ptp";
+            } else {
+                throw new  RuntimeException();
             }
-            this.log("Versuche USB Tethering zu auf " + "rndis0" +  " zu starten");
-            //this.log("Return: " + (Integer) this.usbTether.invoke(this.connectivityManager, "rndis0"));
-            this.log("Return: " + (Integer) this.usbTether.invoke("rndis0"));
-            //this.log("Versuche USB Tethering zu auf " + "usb0" +  " zu starten");
-            //this.log("Return: " + (Integer) this.usbTether.invoke(this.connectivityManager, "usb0"));
-            //this.log("Versuche USB Tethering zu auf " + "ncm0" +  " zu starten");
-            //this.log("Return: " + (Integer) this.usbTether.invoke(this.connectivityManager, "ncm0"));
+        } catch (RuntimeException e) {
+            throw e;
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
+        try {
+            this.log("Mache setprop sys.usb.config rndis,adb");
+            ShellExecutor.getSingleton().executeRoot("setprop sys.usb.config rndis,adb");
+            Thread.sleep(100);
+            this.log("Versuche USB Tethering zu auf " + "rndis0" +  " zu starten");
+            this.log("Return: " + (Integer) this.tether.invoke(this.connectivityManager, "rndis0"));
+            // http://redmine.replicant.us/attachments/435/replicant_usb_networking_device.sh
+            // setprop sys.usb.config rndis,adb
         } catch (IllegalAccessException e) {
             this.err("Reflection Error", e);
         } catch (InvocationTargetException e) {
             this.err("Reflection Error", e);
-        }*/
+        } catch (Exception e) {
+            this.err("Shell error", e);
+        }
     }
 
     @Override
     public void stopTethering() {
-        Intent tetherSettings = new Intent();
+        try {
+            this.log("Untether Return: " + (Integer) this.untether.invoke(this.connectivityManager, "rndis0"));
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
+        if (this.oldUsbFunction != null && !this.oldUsbFunction.equals("")) {
+            try {
+                ShellExecutor.getSingleton().executeRoot("setprop sys.usb.config "+ this.oldUsbFunction+ ",adb");
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    /*  Intent tetherSettings = new Intent();
         tetherSettings.setClassName("com.android.settings", "com.android.settings.TetherSettings");
-        this.view.getContext().startActivity(tetherSettings);
+        this.view.getContext().startActivity(tetherSettings); */
     }
 
     @Override
@@ -115,7 +147,6 @@ public class UsbTethering implements Tetherable, Loggable {
         Log.d("UsbTethering", msg);
         EditText debugTextArea = ((EditText) this.view.findViewById(R.id.debug_messages));
         debugTextArea.append(msg + '\n');
-
     }
 
     @Override

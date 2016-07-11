@@ -14,8 +14,6 @@ import android.widget.Toast;
 import com.oliverscherf.tetheringwithbandwidthshaping.R;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -33,6 +31,7 @@ public class WifiTethering implements Tetherable, Loggable {
     private Method isWifiApEnabled;
     private Method getWifiApState;
     private Method getWifiApConfiguration;
+    private Method setFrequencyBand; // public void setFrequencyBand(int band, boolean persist)
     private View view;
 
     public WifiTethering(View view) {
@@ -49,6 +48,8 @@ public class WifiTethering implements Tetherable, Loggable {
                     this.getWifiApState = method;
                 } else if (method.getName().equals("getWifiApConfiguration")) {
                     this.getWifiApConfiguration = method;
+                } else if (method.getName().equals("setFrequencyBand")) {
+                    this.setFrequencyBand = method;
                 }
             } catch (Exception ex) {
                 this.err("Exception while iterate though the methods of the WifiManager. ", ex);
@@ -111,6 +112,7 @@ public class WifiTethering implements Tetherable, Loggable {
             // TODO: 4 als Konstante einführen. 4 ist WPA2_PSK Konstante im WifiConfiguration.KeyMgmt, jedoch kommt ein Compiler error wenn ich versuche die Konstante zu verwenden
             this.config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE, false);
             this.config.allowedKeyManagement.set(4);
+            //
         }
 
         /*
@@ -131,14 +133,14 @@ public class WifiTethering implements Tetherable, Loggable {
     }
 
     private void setBroadcastChannel(int channelNumber) {
-        try {
-            String configContent = ShellExecutor.execute("cat /data/misc/wifi/testing.conf");
+    /*    try {
+            String configContent = ShellExecutor.executeRoot("cat /data/misc/wifi/testing.conf");
             String[] lines = configContent.split("\n");
-            ShellExecutor.execute("rm /data/misc/wifi/written.conf");
-            ShellExecutor.execute("touch /data/misc/wifi/written.conf");
+            ShellExecutor.executeRoot("rm /data/misc/wifi/written.conf");
+            ShellExecutor.executeRoot("touch /data/misc/wifi/written.conf");
             for(String line : lines) {
                 this.log("Lines line:" + line.toString());
-                this.log("Response: " + ShellExecutor.execute("echo " + line + " >> /data/misc/wifi/written.conf"));
+                this.log("Response: " + ShellExecutor.executeRoot("echo " + line + " >> /data/misc/wifi/written.conf"));
             }
         } catch (IOException e) {
             this.err("",e);
@@ -146,7 +148,7 @@ public class WifiTethering implements Tetherable, Loggable {
             this.err("", e);
         } catch (Exception e) {
             this.err("",e);
-        }
+        } */
     }
 
     @Override
