@@ -14,16 +14,21 @@ import com.oliverscherf.tetheringwithbandwidthshaping.R;
 
 import java.util.ArrayList;
 
+import trafficcontrol.Device;
+import trafficcontrol.DeviceArrayAdapter;
+import trafficcontrol.TrafficControl;
+
 /**
  * A simple {@link Fragment} subclass.
  */
 public class TrafficControlFragment extends Fragment {
 
-    View view;
+    private View view;
     private ListView listView;
-    private ArrayList<String> strArr;
-    private ArrayAdapter<String> adapter;
+    private DeviceArrayAdapter adapter;
     private Button button;
+
+    private TrafficControl trafficControl;
 
 
     public TrafficControlFragment() {
@@ -41,19 +46,22 @@ public class TrafficControlFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
+
+
         this.listView = (ListView) this.view.findViewById(R.id.device_list_view);
         this.button = (Button) this.view.findViewById(R.id.connected_devices_refresh_button);
-        this.strArr = new ArrayList<String>();
-        for (int i = 0; i < 5; ++i) {
-            this.strArr.add("Row" + i);
-        }
-        adapter = new ArrayAdapter<String>(this.getContext(), android.R.layout.simple_list_item_1, strArr);
-        this.listView.setAdapter(adapter);
 
+        final ArrayList<Device> strArr = new ArrayList<Device>();
+        this.trafficControl = new TrafficControl(strArr);
+
+        adapter = new DeviceArrayAdapter(this.getContext(), R.layout.device_row, strArr);
+        //View header = (View)getLayoutInflater().inflate(R.layout.listview_header_row, null);
+        //listView1.addHeaderView(header);
+        this.listView.setAdapter(adapter);
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                strArr.add("hallo");
+                trafficControl.refreshDevices();
                 adapter.notifyDataSetChanged();
             }
         });
