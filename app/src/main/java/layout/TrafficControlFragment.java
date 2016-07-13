@@ -6,7 +6,6 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 
@@ -26,8 +25,8 @@ public class TrafficControlFragment extends Fragment {
     private View view;
     private ListView listView;
     private DeviceArrayAdapter adapter;
-    private Button button;
-
+    private Button refreshButton;
+    private Button deleteButton;
     private TrafficControl trafficControl;
 
 
@@ -40,16 +39,14 @@ public class TrafficControlFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         this.view = inflater.inflate(R.layout.fragment_traffic_control, container, false);
+        this.init();
         return view;
     }
 
-    @Override
-    public void onStart() {
-        super.onStart();
-
-
+    private void init() {
         this.listView = (ListView) this.view.findViewById(R.id.device_list_view);
-        this.button = (Button) this.view.findViewById(R.id.connected_devices_refresh_button);
+        this.refreshButton = (Button) this.view.findViewById(R.id.connected_devices_refresh_button);
+        this.deleteButton = (Button) this.view.findViewById(R.id.delete_rules_button);
 
         final ArrayList<Device> strArr = new ArrayList<Device>();
         this.trafficControl = new TrafficControl(strArr);
@@ -58,12 +55,23 @@ public class TrafficControlFragment extends Fragment {
         //View header = (View)getLayoutInflater().inflate(R.layout.listview_header_row, null);
         //listView1.addHeaderView(header);
         this.listView.setAdapter(adapter);
-        button.setOnClickListener(new View.OnClickListener() {
+        refreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 trafficControl.refreshDevices();
                 adapter.notifyDataSetChanged();
             }
         });
+        this.deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                trafficControl.removceRules();
+            }
+        });
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
     }
 }

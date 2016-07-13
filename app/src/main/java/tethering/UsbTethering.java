@@ -1,7 +1,5 @@
 package tethering;
 
-import android.content.Context;
-import android.hardware.usb.UsbManager;
 import android.net.ConnectivityManager;
 import android.util.Log;
 import android.view.View;
@@ -79,8 +77,6 @@ public class UsbTethering implements Tetherable, Loggable {
                 this.oldUsbFunction = "mtp";
             } else if (execRet.contains("ptp")) {
                 this.oldUsbFunction = "ptp";
-            } else {
-                throw new  RuntimeException();
             }
         } catch (RuntimeException e) {
             throw e;
@@ -116,19 +112,25 @@ public class UsbTethering implements Tetherable, Loggable {
         } catch (InvocationTargetException e) {
             e.printStackTrace();
         }
-        if (this.oldUsbFunction != null && !this.oldUsbFunction.equals("")) {
-            try {
-                ShellExecutor.getSingleton().executeRoot("setprop sys.usb.config "+ this.oldUsbFunction+ ",adb");
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+        if (this.oldUsbFunction == null || this.oldUsbFunction.equals("")) {
+            this.oldUsbFunction = "mtp";
+        }
+        try {
+            ShellExecutor.getSingleton().executeRoot("setprop sys.usb.config " + this.oldUsbFunction + ",adb");
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     /*  Intent tetherSettings = new Intent();
         tetherSettings.setClassName("com.android.settings", "com.android.settings.TetherSettings");
         this.view.getContext().startActivity(tetherSettings); */
     }
+
+    private void getSpeed() {
+
+    }
+
 
     @Override
     public int getTetheringStatus() {

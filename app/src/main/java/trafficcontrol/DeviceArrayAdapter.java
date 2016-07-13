@@ -42,6 +42,8 @@ public class DeviceArrayAdapter extends ArrayAdapter<Device> {
             holder.id = (TextView) row.findViewById(R.id.device_id);
             holder.description = (TextView) row.findViewById(R.id.device_description);
             holder.ipAddress = (TextView) row.findViewById(R.id.device_ipAddress);
+            holder.upTraffic = (TextView) row.findViewById(R.id.device_up_traffic);
+            holder.downTraffic = (TextView) row.findViewById(R.id.device_down_traffic);
             row.setTag(holder);
         }
         else
@@ -53,6 +55,8 @@ public class DeviceArrayAdapter extends ArrayAdapter<Device> {
         holder.id.setText(String.valueOf(device.id));
         holder.description.setText(device.description);
         holder.ipAddress.setText(device.ipAddress);
+        holder.upTraffic.setText(String.valueOf(device.upTrafficBytes));
+        holder.downTraffic.setText(String.valueOf(device.downTrafficBytes));
         return row;
     }
 
@@ -60,5 +64,7 @@ public class DeviceArrayAdapter extends ArrayAdapter<Device> {
         TextView id;
         TextView description;
         TextView ipAddress;
+        TextView upTraffic;
+        TextView downTraffic;
     }
 }
