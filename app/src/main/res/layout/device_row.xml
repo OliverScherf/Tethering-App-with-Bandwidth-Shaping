@@ -40,25 +40,25 @@
         android:textSize="14sp" />
 
     <TextView
-        android:id="@+id/device_up_traffic"
+        android:id="@+id/device_down_traffic"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="5dp"
         android:layout_marginLeft="30sp"
         android:layout_marginTop="5dp"
         android:gravity="center_vertical"
-        android:text="1 MB"
+        android:text="10 MB"
         android:textSize="14sp" />
 
     <TextView
-        android:id="@+id/device_down_traffic"
+        android:id="@+id/device_up_traffic"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginBottom="5dp"
         android:layout_marginLeft="40sp"
         android:layout_marginTop="5dp"
         android:gravity="center_vertical"
-        android:text="10 MB"
+        android:text="1 MB"
         android:textSize="14sp" />
 
 

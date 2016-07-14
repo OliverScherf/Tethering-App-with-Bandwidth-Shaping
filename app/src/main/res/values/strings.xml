@@ -11,6 +11,7 @@
     <string name="bluetooth_tethering_switch">Bluetooth Tethering</string>
     <string name="connected_devices_refresh_button">Refresh</string>
     <string name="delete_rules_button">Delete rules</string>
+    <string name="refresh_traffic_button">Refresh Traffic</string>
     <string-array name="wifi_security_spinner">
         <item>Open/Unsecure</item>
         <item>WPA2 PSK</item>

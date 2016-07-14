@@ -127,11 +127,6 @@ public class UsbTethering implements Tetherable, Loggable {
         this.view.getContext().startActivity(tetherSettings); */
     }
 
-    private void getSpeed() {
-
-    }
-
-
     @Override
     public int getTetheringStatus() {
         /*try {

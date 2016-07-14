@@ -52,7 +52,7 @@ public class DeviceArrayAdapter extends ArrayAdapter<Device> {
         }
 
         Device device = this.devices.get(position);
-        holder.id.setText(String.valueOf(device.id));
+        holder.id.setText(String.valueOf(position + 1));
         holder.description.setText(device.description);
         holder.ipAddress.setText(device.ipAddress);
         holder.upTraffic.setText(String.valueOf(device.upTrafficBytes));

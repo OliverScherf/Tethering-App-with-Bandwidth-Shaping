@@ -34,9 +34,17 @@
         <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="@string/refresh_traffic_button"
+            android:id="@+id/refresh_traffic_button"
+            android:layout_gravity="bottom"  />
+
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="@string/delete_rules_button"
             android:id="@+id/delete_rules_button"
             android:layout_gravity="bottom"  />
+
 
     </LinearLayout>
 
