@@ -22,7 +22,7 @@ import utils.Loggable;
 /**
  * Created by Oliver on 25.05.2016.
  */
-public class WifiTethering implements Tetherable, Loggable {
+public class WifiTethering implements Loggable {
 
     private WifiManager wifiManager;
     private WifiConfiguration config;
@@ -59,7 +59,6 @@ public class WifiTethering implements Tetherable, Loggable {
         this.log(this.config.toString());
     }
 
-    @Override
     public void startTethering() {
         Toast.makeText(this.view.getContext(), "Turning WLAN tethering on", Toast.LENGTH_SHORT).show();
         this.updateConfig();
@@ -141,7 +140,6 @@ public class WifiTethering implements Tetherable, Loggable {
         this.wifiManager.saveConfiguration();
     }
 
-    @Override
     public void stopTethering() {
         Toast.makeText(this.view.getContext(), "Turning WLAN tethering off", Toast.LENGTH_SHORT).show();
         try {
@@ -153,7 +151,6 @@ public class WifiTethering implements Tetherable, Loggable {
         }
     }
 
-    @Override
     public int getTetheringStatus() {
         try {
             return (Integer) this.getWifiApState.invoke(this.wifiManager);

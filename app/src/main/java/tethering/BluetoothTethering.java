@@ -15,7 +15,7 @@ import utils.Loggable;
 /**
  * Created by Oliver on 25.05.2016.
  */
-public class BluetoothTethering implements Tetherable, Loggable {
+public class BluetoothTethering implements Loggable {
 
     private BluetoothAdapter bluetoothAdapter;
     private Constructor bluetoothPanConstructor;
@@ -37,7 +37,6 @@ public class BluetoothTethering implements Tetherable, Loggable {
         }
     }
 
-    @Override
     public void startTethering() {
         Toast.makeText(this.context, "Turning Bluetooth tethering on", Toast.LENGTH_SHORT).show();
         try {
@@ -45,7 +44,8 @@ public class BluetoothTethering implements Tetherable, Loggable {
                 this.bluetoothAdapter.enable();
                 Thread.sleep(100);
             }
-            this.bluetoothPanConstructor.newInstance(this.context, new BluetoothPanServiceListener(this.context, true));
+            Object obj = this.bluetoothPanConstructor.newInstance(this.context, new BluetoothPanServiceListener(this.context, true));
+            this.log("Klassenvariable asd : " + obj.hashCode());
         } catch (InstantiationException e) {
             this.err("Fehler beim Instanz erzeugen vom BluetoothPan", e);
         } catch (IllegalAccessException e) {
@@ -57,33 +57,31 @@ public class BluetoothTethering implements Tetherable, Loggable {
         }
     }
 
-    @Override
     public void stopTethering() {
         Toast.makeText(context, "Turning Bluetooth tethering off", Toast.LENGTH_SHORT).show();
         try {
             this.bluetoothPanConstructor.newInstance(this.context, new BluetoothPanServiceListener(this.context, false));
         } catch (InstantiationException e) {
-            e.printStackTrace();
+            this.err("err",e);
         } catch (IllegalAccessException e) {
-            e.printStackTrace();
+            this.err("err",e);
         } catch (InvocationTargetException e) {
-            e.printStackTrace();
+            this.err("err",e);
         }
     }
 
-    @Override
     public int getTetheringStatus() {
         return 0;
     }
 
     @Override
     public void log(String msg) {
-        Log.d("WifiTethering", msg);
+        Log.d("BluetoothTethering", msg);
     }
 
     @Override
     public void err(String msg, Throwable t) {
-        Log.e("WifiTethering", msg, t);
+        Log.e("BluetoothTethering", msg, t);
     }
 }
 
@@ -99,8 +97,10 @@ class BluetoothPanServiceListener implements BluetoothProfile.ServiceListener, L
 
     @Override
     public void onServiceConnected(int profile, BluetoothProfile proxy) {
-        Log.i("MyApp", "BTPan proxy connected");
+        //Log.i("MyApp", "BTPan proxy connected");
         try {
+            Log.d("ProxyKlasse", proxy.getClass().getName());
+            Log.d("ProxyKlasse", "" + proxy.hashCode());
             proxy.getClass().getMethod("setBluetoothTethering", new Class[]{Boolean.TYPE}).invoke(proxy, new Object[]{Boolean.valueOf(this.enable)});
         } catch (Exception e) {
             this.err("Fehler beim Aktivieren/Deaktivieren des Bluetooth Tetherings", e);

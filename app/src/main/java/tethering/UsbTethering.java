@@ -17,7 +17,7 @@ import utils.ShellExecutor;
 /**
  * Created by Oliver on 25.05.2016.
  */
-public class UsbTethering implements Tetherable, Loggable {
+public class UsbTethering implements Loggable {
 
 
     private Method tether;
@@ -56,20 +56,7 @@ public class UsbTethering implements Tetherable, Loggable {
         }
     }
 
-    private void debugPrintConfig() {
-        /*EditText debugTextArea = ((EditText) this.view.findViewById(R.id.debug_messages));
-        //debugTextArea.setText("");
-        String configContent = "SSID: " + this.config.SSID + '\n';
-        configContent += "Key: " + this.config.preSharedKey + '\n';
-        configContent += "hiddenSSID: " + this.config.hiddenSSID + '\n';
-        debugTextArea.append(configContent); */
-    }
-
-    @Override
     public void startTethering() {
-        //Intent tetherSettings = new Intent();
-        //tetherSettings.setClassName("com.android.settings", "com.android.settings.TetherSettings");
-        //this.view.getContext().startActivity(tetherSettings);
         try {
             // alten stand saven
             String execRet = ShellExecutor.getSingleton().executeRoot("getprop sys.usb.config");
@@ -103,10 +90,9 @@ public class UsbTethering implements Tetherable, Loggable {
         }
     }
 
-    @Override
     public void stopTethering() {
         try {
-            this.log("Untether Return: " + (Integer) this.untether.invoke(this.connectivityManager, "rndis0"));
+            this.untether.invoke(this.connectivityManager, "rndis0");
         } catch (IllegalAccessException e) {
             e.printStackTrace();
         } catch (InvocationTargetException e) {
@@ -122,12 +108,8 @@ public class UsbTethering implements Tetherable, Loggable {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-    /*  Intent tetherSettings = new Intent();
-        tetherSettings.setClassName("com.android.settings", "com.android.settings.TetherSettings");
-        this.view.getContext().startActivity(tetherSettings); */
     }
 
-    @Override
     public int getTetheringStatus() {
         /*try {
             this.log("USB Tether Status: " + (Integer) this.getWifiApState.invoke(this.wifiManager));

@@ -38,7 +38,7 @@ public class TrafficControl implements Loggable {
             for (String chain : chains) {
                 if (!currentRules.contains(chain)) {
                     cmds.add("iptables -N" + chain);
-                    cmds.add("iptables -A" + chain + " -j RETURN");
+                    //cmds.add("iptables -A" + chain + " -j RETURN");
                     if (chain.equals(inputChain)) {
                         cmds.add("iptables -A INPUT -j " + chain);
                     } else if (chain.equals(outputChain)) {
@@ -301,5 +301,69 @@ public class TrafficControl implements Loggable {
     @Override
     public void err(String msg, Throwable t) {
         Log.d("TrafficControl", msg, t);
+    }
+
+    public void writeLimitRule(Device d, int downloadLimit, int uploadLimit) {
+        // Check if own device
+        // da könnte man es wie BradyBound machen also ne ganze Range abfragen
+        if (this.deviceList.get(0).equals(d)) {
+            this.limitOwnDevice(d, downloadLimit, uploadLimit);
+        } else {
+            this.limitDevice(d, downloadLimit, uploadLimit);
+        }
+
+
+    }
+
+    private void limitOwnDevice(Device d, int downloadLimit, int uploadLimit) {
+        // TODO Im Init müssen die chains fürs drosseln erstellt werden, alternativ könnte man auch einfach an die counter appenden.
+        // TODO: Vielleicht checken ob das Device wirklich noch das eigene ist (Methode getOwnDevice())
+        ArrayList<String> cmds = new ArrayList<>();
+        cmds.add("iptables -A os_cnt_in -d " + d.ipAddress + " -p tcp -m state --state ESTABLISHED -m hashlimit --hashlimit-above " + convertToPacketsPerSecond(downloadLimit)  + "/sec --hashlimit-name OS_IN -j DROP");
+        cmds.add("iptables -A os_cnt_out -s " + d.ipAddress + " -p tcp -m state --state ESTABLISHED -m hashlimit --hashlimit-above " + convertToPacketsPerSecond(uploadLimit)  + "/sec --hashlimit-name OS_OUT -j DROP");
+        try {
+            ShellExecutor.getSingleton().executeRoot(cmds);
+        } catch (IOException e) {
+            this.err("", e);
+        } catch (InterruptedException e) {
+            this.err("", e);
+        }
+    }
+
+    private void limitDevice(Device d, int downloadLimit, int uploadLimit) {
+        ArrayList<String> cmds = new ArrayList<>();
+        cmds.add("iptables -A os_cnt_fwd -d " + d.ipAddress + " -p tcp -m state --state ESTABLISHED -m hashlimit --hashlimit-above " + convertToPacketsPerSecond(downloadLimit)  + "/sec --hashlimit-name OS_FWD_IN -j DROP");
+        cmds.add("iptables -A os_cnt_fwd -s " + d.ipAddress + " -p tcp -m state --state ESTABLISHED -m hashlimit --hashlimit-above " + convertToPacketsPerSecond(uploadLimit)  + "/sec --hashlimit-name OS_FWD_OUT -j DROP");
+        try {
+            ShellExecutor.getSingleton().executeRoot(cmds);
+        } catch (IOException e) {
+            this.err("", e);
+        } catch (InterruptedException e) {
+            this.err("", e);
+        }
+    }
+
+    public void deleteLimitRules(Device d) {
+        try {
+            String currentRules = ShellExecutor.getSingleton().executeRoot("iptables -S");
+            String[] lines = currentRules.split("\n");
+            ArrayList<String> cmds = new ArrayList<>();
+            for (String line : lines) {
+                if (line.contains(d.ipAddress + "/32 -p tcp ")) {
+                    cmds.add("iptables " + line.replace("-A", "-D"));
+                }
+            }
+            ShellExecutor.getSingleton().executeRoot(cmds);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private int convertToPacketsPerSecond(int limit) {
+        int packetSize = 1400;
+        int bytes = limit * 125;
+        return bytes / packetSize;
     }
 }
