@@ -203,22 +203,6 @@ public class TrafficControl implements Loggable {
     }
 
 
-    public void flushChains() {
-        try {
-            String inputChain = "iptables -F os_cnt_in";
-            String outputChain = "iptables -F os_cnt_out";
-            String forwardChain = "iptables -F os_cnt_fwd";
-            ArrayList<String> cmds = new ArrayList<>(3);
-            cmds.add(inputChain);
-            cmds.add(outputChain);
-            cmds.add(forwardChain);
-            ShellExecutor.getSingleton().executeRoot(cmds);
-        } catch (Exception e) {
-            this.err("", e);
-        }
-    }
-
-
     private long extractBytes(String line) {
         try {
             int firstPaketDigitIndex = -1;
@@ -361,9 +345,41 @@ public class TrafficControl implements Loggable {
         }
     }
 
+    public void deleteAllLimitRules() {
+        try {
+            String currentRules = ShellExecutor.getSingleton().executeRoot("iptables -S");
+            String[] lines = currentRules.split("\n");
+            ArrayList<String> cmds = new ArrayList<>();
+            for (String line : lines) {
+                if (line.contains("os_cnt") && line.contains("DROP")) {
+                    cmds.add("iptables " + line.replace("-A", "-D"));
+                }
+            }
+            ShellExecutor.getSingleton().executeRoot(cmds);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
     private int convertToPacketsPerSecond(int limit) {
         int packetSize = 1400;
         int bytes = limit * 125;
         return bytes / packetSize;
+    }
+
+    public void resetCounters() {
+        try {
+            ArrayList<String> cmds = new ArrayList<>();
+            cmds.add("iptables -Z os_cnt_in");
+            cmds.add("iptables -Z os_cnt_out");
+            cmds.add("iptables -Z os_cnt_fwd");
+            ShellExecutor.getSingleton().executeRoot(cmds);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

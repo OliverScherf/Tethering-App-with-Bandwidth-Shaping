@@ -28,10 +28,11 @@ import trafficcontrol.TrafficControl;
 public class TrafficControlFragment extends Fragment {
 
     private View view;
-    private ListView listView;
+    private ListView deviceListView;
     private DeviceArrayAdapter adapter;
     private Button refreshButton;
-    private Button deleteButton;
+    private Button resetCountersButton;
+    private Button deleteAllRules;
     private TrafficControl trafficControl;
     private Button refreshTraffic;
 
@@ -50,30 +51,27 @@ public class TrafficControlFragment extends Fragment {
     }
 
     private void init() {
-        Log.d("LOL", "New Version222222222");
-        this.listView = (ListView) this.view.findViewById(R.id.device_list_view);
+        Log.d("LLO","New Version");
+        this.deviceListView = (ListView) this.view.findViewById(R.id.device_list_view);
         this.refreshButton = (Button) this.view.findViewById(R.id.connected_devices_refresh_button);
         this.refreshTraffic = (Button) this.view.findViewById(R.id.refresh_traffic_button);
-        this.deleteButton = (Button) this.view.findViewById(R.id.delete_rules_button);
-
+        this.resetCountersButton = (Button) this.view.findViewById(R.id.reset_counters_button);
+        this.deleteAllRules = (Button) this.view.findViewById(R.id.delete_all_rules_button);
         final ArrayList<Device> strArr = new ArrayList<Device>();
         this.trafficControl = new TrafficControl(strArr);
+        this.adapter = new DeviceArrayAdapter(this.getContext(), R.layout.device_row, strArr);
 
-        adapter = new DeviceArrayAdapter(this.getContext(), R.layout.device_row, strArr);
-
-
-        this.listView.setAdapter(adapter);
-        this.listView.setOnItemClickListener(this.getTrafficControlDialog());
-        Button confirmButton = (Button) this.view.findViewById(R.id.confirm_traffic_limit_button);
-        Button cancelButton = (Button) this.view.findViewById(R.id.cancel_traffic_limit_button);
+        this.deviceListView.setAdapter(this.adapter);
+        this.deviceListView.setOnItemClickListener(this.openTrafficControlDialog());
 
 
-        refreshButton.setOnClickListener(new View.OnClickListener() {
+        this.refreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 trafficControl.refreshDevices();
+                trafficControl.refreshTrafficStats();
                 adapter.notifyDataSetChanged();
-                Toast.makeText(TrafficControlFragment.this.getContext(), "Done", Toast.LENGTH_SHORT).show();
+                Toast.makeText(TrafficControlFragment.this.getContext(), "Devices refreshed", Toast.LENGTH_SHORT).show();
             }
         });
         this.refreshTraffic.setOnClickListener(new View.OnClickListener() {
@@ -81,18 +79,28 @@ public class TrafficControlFragment extends Fragment {
             public void onClick(View v) {
                 trafficControl.refreshTrafficStats();
                 adapter.notifyDataSetChanged();
-                Toast.makeText(TrafficControlFragment.this.getContext(), "Done", Toast.LENGTH_SHORT).show();
+                Toast.makeText(TrafficControlFragment.this.getContext(), "Traffic Counter refreshed", Toast.LENGTH_SHORT).show();
             }
         });
-        this.deleteButton.setOnClickListener(new View.OnClickListener() {
+        this.resetCountersButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                trafficControl.flushChains();
-                Toast.makeText(TrafficControlFragment.this.getContext(), "Done", Toast.LENGTH_SHORT).show();
+                trafficControl.resetCounters();
+                trafficControl.refreshTrafficStats();
+                adapter.notifyDataSetChanged();
+                Toast.makeText(TrafficControlFragment.this.getContext(), "Traffic Counter resetted", Toast.LENGTH_SHORT).show();
             }
         });
+        this.deleteAllRules.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                trafficControl.deleteAllLimitRules();
+                Toast.makeText(TrafficControlFragment.this.getContext(), "All Rules deleted", Toast.LENGTH_SHORT).show();
+            }
+        });
+        trafficControl.refreshDevices();
+        trafficControl.refreshTrafficStats();
     }
-
 
     @Override
     public void onStart() {
@@ -100,11 +108,11 @@ public class TrafficControlFragment extends Fragment {
     }
 
 
-    public AdapterView.OnItemClickListener getTrafficControlDialog() {
+    public AdapterView.OnItemClickListener openTrafficControlDialog() {
         return new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                final Device d = (Device) listView.getItemAtPosition(position);
+                final Device d = (Device) deviceListView.getItemAtPosition(position);
                 final Dialog dialog = new Dialog(getContext());
                 dialog.setContentView(R.layout.traffic_limit_dialog);
                 final EditText downloadLimit = (EditText) dialog.findViewById(R.id.download_limit);

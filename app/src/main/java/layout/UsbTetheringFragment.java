@@ -14,7 +14,6 @@ import android.widget.Switch;
 import com.oliverscherf.tetheringwithbandwidthshaping.R;
 
 import tethering.UsbTethering;
-import tethering.WifiTethering;
 
 public class UsbTetheringFragment extends Fragment {
 
@@ -33,6 +32,11 @@ public class UsbTetheringFragment extends Fragment {
         return view;
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        this.usbTetheringSwitch.setChecked(this.usbTethering.isUsbTetheringEnabled());
+    }
 
     @Override
     public void onStart() {

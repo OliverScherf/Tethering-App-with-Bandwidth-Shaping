@@ -9,9 +9,10 @@
     <string name="wifi_hide_ssid_check_box">Hide SSID</string>
     <string name="usb_tethering_switch">USB Tethering</string>
     <string name="bluetooth_tethering_switch">Bluetooth Tethering</string>
-    <string name="connected_devices_refresh_button">Refresh</string>
-    <string name="delete_rules_button">Delete rules</string>
-    <string name="refresh_traffic_button">Refresh Traffic</string>
+    <string name="connected_devices_refresh_button">Refresh\nConnected\nDevices</string>
+    <string name="reset_counters_button">Reset\nTraffic\nCounters</string>
+    <string name="refresh_traffic_button">Refresh\nTraffic\nCounters</string>
+    <string name="delete_all_rules_button">Remove Traffic\nLimit\nRules</string>
     <string-array name="wifi_security_spinner">
         <item>Open/Unsecure</item>
         <item>WPA2 PSK</item>

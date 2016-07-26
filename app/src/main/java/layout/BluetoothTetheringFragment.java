@@ -1,6 +1,8 @@
 package layout;
 
 
+import android.content.Context;
+import android.net.ConnectivityManager;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
@@ -8,15 +10,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.Switch;
+import android.widget.Toast;
 
 import com.oliverscherf.tetheringwithbandwidthshaping.R;
 
 import tethering.BluetoothTethering;
-import tethering.WifiTethering;
 
-/**
- * A simple {@link Fragment} subclass.
- */
 public class BluetoothTetheringFragment extends Fragment {
 
     private BluetoothTethering bluetoothTethering;
@@ -37,16 +36,24 @@ public class BluetoothTetheringFragment extends Fragment {
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        this.bluetoothSwitch.setChecked(this.bluetoothTethering.isBluetoothTetheringEnabled());
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
-        this.bluetoothTethering = new BluetoothTethering(this.getContext());
+        this.bluetoothTethering = new BluetoothTethering(this.getContext(), (ConnectivityManager) this.getActivity().getSystemService(Context.CONNECTIVITY_SERVICE));
         this.bluetoothSwitch = (Switch) this.view.findViewById(R.id.bluetooth_tethering_switch);
         this.bluetoothSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked) {
+                    Toast.makeText(getContext(), "Turning Bluetooth tethering on", Toast.LENGTH_SHORT).show();
                     BluetoothTetheringFragment.this.bluetoothTethering.startTethering();
                 } else {
+                    Toast.makeText(getContext(), "Turning Bluetooth tethering off", Toast.LENGTH_SHORT).show();
                     BluetoothTetheringFragment.this.bluetoothTethering.stopTethering();
                 }
             }

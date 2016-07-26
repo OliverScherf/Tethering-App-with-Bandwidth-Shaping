@@ -14,51 +14,34 @@ import java.lang.reflect.Method;
 import utils.Loggable;
 import utils.ShellExecutor;
 
-/**
- * Created by Oliver on 25.05.2016.
- */
 public class UsbTethering implements Loggable {
-
 
     private Method tether;
     private Method untether;
+    private Method getTetheredIfaces;
     private View view;
     private ConnectivityManager connectivityManager;
-    private String[] usbInterfaces;
     private String oldUsbFunction;
-
-
 
     public UsbTethering(View view, ConnectivityManager connectivityManager) {
         this.view = view;
-        this.log(connectivityManager.getClass().getName());
         this.connectivityManager = connectivityManager;
         for (Method method : this.connectivityManager.getClass().getDeclaredMethods()) {
-            //if (method.getName().equals("setUsbTethering")) {
             if (method.getName().equals("tether")) {
                 this.tether = method;
-            } else if(method.getName().equals("getTetherableUsbRegexs")) {
-                try {
-                    this.usbInterfaces = (String[]) method.invoke(connectivityManager);
-                } catch (IllegalAccessException e) {
-                    this.err("Reflection Error", e);
-                } catch (InvocationTargetException e) {
-                    this.err("Reflection Error", e);
-                } catch (Exception e) {
-                    this.err("Other error", e);
-                }
             } else if(method.getName().equals("untether")) {
                 this.untether = method;
+            } else if (method.getName().equals("getTetheredIfaces")) {
+                this.getTetheredIfaces = method;
             }
-        }
-        for (String curInterface : usbInterfaces) {
-            this.log("Interface " + curInterface);
         }
     }
 
     public void startTethering() {
+        if (this.isUsbTetheringEnabled()) {
+            return;
+        }
         try {
-            // alten stand saven
             String execRet = ShellExecutor.getSingleton().executeRoot("getprop sys.usb.config");
             if (execRet.contains("mtp")) {
                 this.oldUsbFunction = "mtp";
@@ -74,13 +57,10 @@ public class UsbTethering implements Loggable {
         }
 
         try {
-            this.log("Mache setprop sys.usb.config rndis,adb");
             ShellExecutor.getSingleton().executeRoot("setprop sys.usb.config rndis,adb");
             Thread.sleep(100);
-            this.log("Versuche USB Tethering zu auf " + "rndis0" +  " zu starten");
-            this.log("Return: " + (Integer) this.tether.invoke(this.connectivityManager, "rndis0"));
+            this.tether.invoke(this.connectivityManager, "rndis0");
             // http://redmine.replicant.us/attachments/435/replicant_usb_networking_device.sh
-            // setprop sys.usb.config rndis,adb
         } catch (IllegalAccessException e) {
             this.err("Reflection Error", e);
         } catch (InvocationTargetException e) {
@@ -110,22 +90,26 @@ public class UsbTethering implements Loggable {
         }
     }
 
-    public int getTetheringStatus() {
-        /*try {
-            this.log("USB Tether Status: " + (Integer) this.getWifiApState.invoke(this.wifiManager));
+    public boolean isUsbTetheringEnabled() {
+        try {
+            String[] tethInf = (String[]) this.getTetheredIfaces.invoke(this.connectivityManager);
+            for (String inf : tethInf) {
+                if (inf.contains("rndis")) {
+                    return true;
+                }
+            }
+            return false;
         } catch (IllegalAccessException e) {
             this.err("Reflection Error", e);
         } catch (InvocationTargetException e) {
             this.err("Reflection Error", e);
-        }*/
-        return -1;
+        }
+        return false;
     }
 
     @Override
     public void log(String msg) {
         Log.d("UsbTethering", msg);
-        EditText debugTextArea = ((EditText) this.view.findViewById(R.id.debug_messages));
-        debugTextArea.append(msg + '\n');
     }
 
     @Override
