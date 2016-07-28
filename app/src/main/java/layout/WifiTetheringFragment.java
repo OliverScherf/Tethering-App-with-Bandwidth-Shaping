@@ -1,6 +1,7 @@
 package layout;
 
 
+import android.content.Context;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -76,7 +77,7 @@ public class WifiTetheringFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        this.wifiTethering = new WifiTethering(this.view);
+        this.wifiTethering = new WifiTethering((WifiManager) this.view.getContext().getSystemService(Context.WIFI_SERVICE));
         this.wifiSwitch = (Switch) this.view.findViewById(R.id.wifi_tethering_switch);
         this.wifiSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override

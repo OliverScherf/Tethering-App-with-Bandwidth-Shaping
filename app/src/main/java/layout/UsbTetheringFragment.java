@@ -41,7 +41,7 @@ public class UsbTetheringFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        this.usbTethering = new UsbTethering(this.view, (ConnectivityManager) this.getActivity().getSystemService(Context.CONNECTIVITY_SERVICE));
+        this.usbTethering = new UsbTethering((ConnectivityManager) this.getActivity().getSystemService(Context.CONNECTIVITY_SERVICE));
         this.usbTetheringSwitch = (Switch) this.view.findViewById(R.id.usb_tethering_switch);
         this.usbTetheringSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
