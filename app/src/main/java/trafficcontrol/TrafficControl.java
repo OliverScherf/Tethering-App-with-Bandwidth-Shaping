@@ -21,13 +21,14 @@ public class TrafficControl implements Loggable {
 
     public TrafficControl(ArrayList<Device> deviceList) {
         this.deviceList = deviceList;
-        this.initIpTables();
+        this.initCounterChains();
+        this.initLimitChains();
     }
 
     /**
      * Insert traffic count chains.
      */
-    private void initIpTables() {
+    private void initCounterChains() {
         ArrayList<String> cmds = new ArrayList<>(10);
         try {
             String inputChain = "os_count_inp";
@@ -50,7 +51,37 @@ public class TrafficControl implements Loggable {
             }
             ShellExecutor.getSingleton().executeRoot(cmds);
         } catch (Exception e) {
-            this.err("Error while initIpTables", e);
+            this.err("Error while initCounterChains", e);
+        }
+    }
+
+    /**
+     * Insert traffic count chains.
+     */
+    private void initLimitChains() {
+        ArrayList<String> cmds = new ArrayList<>(10);
+        try {
+            String inputChain = "os_limit_inp";
+            String outputChain = "os_limit_out";
+            String forwardChain = "os_limit_fwd";
+            String[] chains = {inputChain, outputChain, forwardChain};
+            String currentRules = ShellExecutor.getSingleton().executeRoot("iptables -S");
+            for (String chain : chains) {
+                if (!currentRules.contains(chain)) {
+                    cmds.add("iptables -N" + chain);
+                    //cmds.add("iptables -A" + chain + " -j RETURN");
+                    if (chain.equals(inputChain)) {
+                        cmds.add("iptables -A INPUT -j " + chain);
+                    } else if (chain.equals(outputChain)) {
+                        cmds.add("iptables -A OUTPUT -j " + chain);
+                    } else if (chain.equals(forwardChain)) {
+                        cmds.add("iptables -A FORWARD -j " + chain);
+                    }
+                }
+            }
+            ShellExecutor.getSingleton().executeRoot(cmds);
+        } catch (Exception e) {
+            this.err("Error while initLimitChains", e);
         }
     }
 
@@ -88,7 +119,6 @@ public class TrafficControl implements Loggable {
         if (!currentRules.contains(outputRule)) {
             cmds.add("iptables -I " + outputRule);
         }
-
         // FWD rules
         for (int i = 1; i < this.deviceList.size(); ++i) {
             Device d = this.deviceList.get(i);
@@ -101,7 +131,6 @@ public class TrafficControl implements Loggable {
                 cmds.add("iptables -I " + outputStream);
             }
         }
-
         try {
             ShellExecutor.getSingleton().executeRoot(cmds);
         } catch (IOException e) {
@@ -305,8 +334,8 @@ public class TrafficControl implements Loggable {
         // TODO Im Init müssen die chains fürs drosseln erstellt werden, alternativ könnte man auch einfach an die counter appenden.
         // TODO: Vielleicht checken ob das Device wirklich noch das eigene ist (Methode getOwnDevice())
         ArrayList<String> cmds = new ArrayList<>();
-        cmds.add("iptables -A os_count_inp -d " + d.ipAddress + " -p tcp -m state --state ESTABLISHED -m hashlimit --hashlimit-above " + convertToPacketsPerSecond(downloadLimit)  + "/sec --hashlimit-name OS_IN -j DROP");
-        cmds.add("iptables -A os_count_out -s " + d.ipAddress + " -p tcp -m state --state ESTABLISHED -m hashlimit --hashlimit-above " + convertToPacketsPerSecond(uploadLimit)  + "/sec --hashlimit-name OS_OUT -j DROP");
+        cmds.add("iptables -A os_limit_inp -d " + d.ipAddress + " -p tcp -m state --state ESTABLISHED -m hashlimit --hashlimit-above " + convertToPacketsPerSecond(downloadLimit)  + "/sec --hashlimit-name OS_IN -j DROP");
+        cmds.add("iptables -A os_limit_out -s " + d.ipAddress + " -p tcp -m state --state ESTABLISHED -m hashlimit --hashlimit-above " + convertToPacketsPerSecond(uploadLimit)  + "/sec --hashlimit-name OS_OUT -j DROP");
         try {
             ShellExecutor.getSingleton().executeRoot(cmds);
         } catch (IOException e) {
@@ -318,8 +347,8 @@ public class TrafficControl implements Loggable {
 
     private void limitDevice(Device d, int downloadLimit, int uploadLimit) {
         ArrayList<String> cmds = new ArrayList<>();
-        cmds.add("iptables -A os_count_fwd -d " + d.ipAddress + " -p tcp -m state --state ESTABLISHED -m hashlimit --hashlimit-above " + convertToPacketsPerSecond(downloadLimit)  + "/sec --hashlimit-name OS_FWD_IN -j DROP");
-        cmds.add("iptables -A os_count_fwd -s " + d.ipAddress + " -p tcp -m state --state ESTABLISHED -m hashlimit --hashlimit-above " + convertToPacketsPerSecond(uploadLimit)  + "/sec --hashlimit-name OS_FWD_OUT -j DROP");
+        cmds.add("iptables -A os_limit_fwd -d " + d.ipAddress + " -p tcp -m state --state ESTABLISHED -m hashlimit --hashlimit-above " + convertToPacketsPerSecond(downloadLimit)  + "/sec --hashlimit-name OS_FWD_IN -j DROP");
+        cmds.add("iptables -A os_limit_fwd -s " + d.ipAddress + " -p tcp -m state --state ESTABLISHED -m hashlimit --hashlimit-above " + convertToPacketsPerSecond(uploadLimit)  + "/sec --hashlimit-name OS_FWD_OUT -j DROP");
         try {
             ShellExecutor.getSingleton().executeRoot(cmds);
         } catch (IOException e) {
@@ -355,7 +384,7 @@ public class TrafficControl implements Loggable {
             String[] lines = currentRules.split("\n");
             ArrayList<String> cmds = new ArrayList<>();
             for (String line : lines) {
-                if (line.contains("os_cnt") && line.contains("DROP")) {
+                if (line.contains("os_limit") && line.contains("DROP")) {
                     cmds.add("iptables " + line.replace("-A", "-D"));
                 }
             }
@@ -407,7 +436,6 @@ public class TrafficControl implements Loggable {
     }
 
     private int parseTrafficLimit(String rule) {
-        String s = "-A os_count_inp -d 192.168.178.34/32 -p tcp -m state --state ESTABLISHED -m hashlimit --hashlimit-above 89/sec --hashlimit-burst 5 --hashlimit-name OS_IN -j DROP";
         int indexOfAbove = rule.indexOf("above");
         if (indexOfAbove == -1) {
             return -1;

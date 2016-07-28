@@ -18,7 +18,6 @@ import utils.Loggable;
  */
 public class BluetoothTethering implements Loggable {
 
-    private BluetoothAdapter bluetoothAdapter;
     private Constructor bluetoothPanConstructor;
     private Context context;
     private ConnectivityManager connectivityManager;
@@ -27,7 +26,6 @@ public class BluetoothTethering implements Loggable {
 
     public BluetoothTethering(Context context, ConnectivityManager connectivityManager) {
         this.context = context;
-        this.bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         this.connectivityManager = connectivityManager;
         try {
             Class classBluetoothPan = Class.forName("android.bluetooth.BluetoothPan");
@@ -54,8 +52,8 @@ public class BluetoothTethering implements Loggable {
             return;
         }
         try {
-            if (!this.bluetoothAdapter.isEnabled()) {
-                this.bluetoothAdapter.enable();
+            if (!BluetoothAdapter.getDefaultAdapter().isEnabled()) {
+                BluetoothAdapter.getDefaultAdapter().enable();
                 Thread.sleep(100);
             }
             this.bluetoothPanConstructor.newInstance(this.context, new BluetoothPanServiceListener(this.context, true));

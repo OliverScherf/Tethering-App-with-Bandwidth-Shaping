@@ -16,15 +16,13 @@ import utils.ShellExecutor;
 
 public class UsbTethering implements Loggable {
 
+    private ConnectivityManager connectivityManager;
     private Method tether;
     private Method untether;
     private Method getTetheredIfaces;
-    private View view;
-    private ConnectivityManager connectivityManager;
     private String oldUsbFunction;
 
-    public UsbTethering(View view, ConnectivityManager connectivityManager) {
-        this.view = view;
+    public UsbTethering(ConnectivityManager connectivityManager) {
         this.connectivityManager = connectivityManager;
         for (Method method : this.connectivityManager.getClass().getDeclaredMethods()) {
             if (method.getName().equals("tether")) {

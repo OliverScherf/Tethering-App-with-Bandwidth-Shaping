@@ -25,14 +25,15 @@ import utils.Loggable;
 public class WifiTethering implements Loggable {
 
     public static final int WPA2_PSK2 = 4;
+
     private WifiManager wifiManager;
     private WifiConfiguration config;
     private Method setWifiApEnabled;
     private Method isWifiApEnabled;
     private Method getWifiApConfiguration;
 
-    public WifiTethering(View view) {
-        this.wifiManager = (WifiManager) view.getContext().getSystemService(Context.WIFI_SERVICE);
+    public WifiTethering(WifiManager wifiManager) {
+        this.wifiManager = wifiManager;
         for (Method method : this.wifiManager.getClass().getDeclaredMethods()) {
             try {
                 if (method.getName().equals("setWifiApEnabled")) {
@@ -58,6 +59,28 @@ public class WifiTethering implements Loggable {
         } catch (InvocationTargetException e) {
             this.err("Reflection Error", e);
         }
+    }
+
+    public WifiConfiguration getWifiApConfig() {
+        try {
+            return (WifiConfiguration) this.getWifiApConfiguration.invoke(this.wifiManager);
+        } catch (IllegalAccessException e) {
+            this.err("Reflection Error", e);
+        } catch (InvocationTargetException e) {
+            this.err("Reflection Error", e);
+        }
+        return null;
+    }
+
+    public boolean isWifiApEnabled() {
+        try {
+            return (boolean) this.isWifiApEnabled.invoke(this.wifiManager);
+        } catch (IllegalAccessException e) {
+            this.err("Reflection Error", e);
+        } catch (InvocationTargetException e) {
+            this.err("Reflection Error", e);
+        }
+        return false;
     }
 
     private void setInitialWifiSettings() {
@@ -118,27 +141,5 @@ public class WifiTethering implements Loggable {
     @Override
     public void err(String msg, Throwable t) {
         Log.e("WifiTethering", msg, t);
-    }
-
-    public WifiConfiguration getWifiApConfig() {
-        try {
-            return (WifiConfiguration) this.getWifiApConfiguration.invoke(this.wifiManager);
-        } catch (IllegalAccessException e) {
-            this.err("Reflection Error", e);
-        } catch (InvocationTargetException e) {
-            this.err("Reflection Error", e);
-        }
-        return null;
-    }
-
-    public boolean isWifiApEnabled() {
-        try {
-            return (boolean) this.isWifiApEnabled.invoke(this.wifiManager);
-        } catch (IllegalAccessException e) {
-            this.err("Reflection Error", e);
-        } catch (InvocationTargetException e) {
-            this.err("Reflection Error", e);
-        }
-        return false;
     }
 }

@@ -19,13 +19,6 @@
             android:text="@string/bluetooth_tethering_switch"
             android:layout_margin="@dimen/appbar_padding_top"
             android:id="@+id/bluetooth_tethering_switch" />
-
-        <EditText
-            android:id="@+id/debug_messages"
-            android:text="VER5"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-
     </LinearLayout>
 
 

@@ -55,13 +55,6 @@
             android:spinnerMode="dropdown"
             android:entries="@array/wifi_broadcast_channel_spinner"
             android:layout_gravity="center_horizontal" />
-
-        <EditText
-            android:id="@+id/debug_messages"
-            android:text="VER10"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
-
     </LinearLayout>
 
 
