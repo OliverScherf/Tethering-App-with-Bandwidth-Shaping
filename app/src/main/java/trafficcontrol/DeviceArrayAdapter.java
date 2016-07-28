@@ -31,40 +31,59 @@ public class DeviceArrayAdapter extends ArrayAdapter<Device> {
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
         View row = convertView;
-        WeatherHolder holder = null;
+        DeviceHolder holder = null;
 
         if(row == null)
         {
             LayoutInflater inflater = ((Activity) this.context).getLayoutInflater();
             row = inflater.inflate(layoutResourceId, parent, false);
 
-            holder = new WeatherHolder();
-            holder.id = (TextView) row.findViewById(R.id.device_id);
+            holder = new DeviceHolder();
             holder.description = (TextView) row.findViewById(R.id.device_description);
             holder.ipAddress = (TextView) row.findViewById(R.id.device_ipAddress);
             holder.upTraffic = (TextView) row.findViewById(R.id.device_up_traffic);
             holder.downTraffic = (TextView) row.findViewById(R.id.device_down_traffic);
+            holder.maxUpSpeed = (TextView) row.findViewById(R.id.device_up_limit);
+            holder.maxDownSpeed = (TextView) row.findViewById(R.id.device_down_limit);
             row.setTag(holder);
         }
         else
         {
-            holder = (WeatherHolder)row.getTag();
+            holder = (DeviceHolder)row.getTag();
         }
 
         Device device = this.devices.get(position);
-        holder.id.setText(String.valueOf(position + 1));
-        holder.description.setText(device.description);
+        if (position == 0) {
+            holder.description.setText("Smartphone Internet\nInterface: " + device.description);
+        } else {
+            holder.description.setText("Tethered Internet\nInterface: " + device.description);
+        }
         holder.ipAddress.setText(device.ipAddress);
-        holder.upTraffic.setText(String.valueOf(device.upTrafficBytes));
-        holder.downTraffic.setText(String.valueOf(device.downTrafficBytes));
+        String download = "Download: " + String.valueOf(device.downTrafficBytes) + " KB";
+        holder.downTraffic.setText(download);
+        String upload = "Upload: " + String.valueOf(device.upTrafficBytes) + " KB";
+        holder.upTraffic.setText(upload);
+        if (device.uploadLimit == 0) {
+            holder.maxUpSpeed.setText("not set");
+        } else {
+            holder.maxUpSpeed.setText("Max. Uploadspeed:\n" + device.uploadLimit +  "kbit/s");
+        }
+        if (device.downloadLimit== 0) {
+            holder.maxDownSpeed.setText("not set");
+        } else {
+            holder.maxDownSpeed.setText("Max. Downloadspeed:\n" + device.uploadLimit +  "kbit/s");
+        }
+
+
         return row;
     }
 
-    static class WeatherHolder {
-        TextView id;
+    static class DeviceHolder {
         TextView description;
         TextView ipAddress;
         TextView upTraffic;
         TextView downTraffic;
+        TextView maxDownSpeed;;
+        TextView maxUpSpeed;;
     }
 }

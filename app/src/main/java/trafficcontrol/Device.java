@@ -9,6 +9,8 @@ public class Device {
     public String description;
     public long upTrafficBytes;
     public long downTrafficBytes;
+    public int uploadLimit;
+    public int downloadLimit;
 
 
     public Device(String ipAddress, String description, long upTrafficBytes, long downTrafficBytes) {
@@ -16,6 +18,7 @@ public class Device {
         this.description = description;
         this.upTrafficBytes = upTrafficBytes;
         this.downTrafficBytes = downTrafficBytes;
+        this.uploadLimit = 0;
     }
 
     public Device(String ipAddress, String description) {
@@ -23,6 +26,7 @@ public class Device {
         this.description = description;
         this.upTrafficBytes = 0;
         this.downTrafficBytes = 0;
+        this.downloadLimit = 0;
     }
 
     @Override

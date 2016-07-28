@@ -1,8 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:weightSum="1">
+    android:layout_height="match_parent">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Enter the maximum rate desired"
+        android:textSize="20sp"/>
 
 
     <LinearLayout
@@ -11,34 +16,45 @@
         android:layout_height="wrap_content">
 
         <EditText
-            android:layout_width="200sp"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
             android:id="@+id/download_limit"
-            android:layout_gravity="right" />
+            android:layout_weight="1"
+            android:hint="Downloadspeed (kbits)"/>
 
         <EditText
-                android:layout_width="200sp"
+                android:layout_width="fill_parent"
                 android:layout_height="wrap_content"
                 android:id="@+id/upload_limit"
-                android:layout_gravity="left" />
+                android:layout_weight="1"
+                android:hint="Uploadspeed (kbits)" />
     </LinearLayout>
 
     <LinearLayout
         android:orientation="horizontal"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
+            android:layout_weight="1"
             android:text="Confirm"
             android:id="@+id/confirm_traffic_limit_button" />
 
         <Button
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:text="Cancel"
-            android:id="@+id/cancel_traffic_limit_button" />
+            android:layout_weight="1"
+            android:text="Remove rule"
+            android:id="@+id/delete_existing_rule_button" />
+
     </LinearLayout>
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cancel"
+        android:layout_gravity="right"
+        android:id="@+id/cancel_button" />
 
 </LinearLayout>

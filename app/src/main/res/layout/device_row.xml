@@ -2,64 +2,72 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="horizontal"
-    android:padding="10dp">
+    android:orientation="vertical"
+    android:padding="3sp">
 
-    <TextView
-        android:id="@+id/device_id"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginBottom="5dp"
-        android:layout_marginTop="5dp"
-        android:gravity="center_vertical"
-        android:text="01"
-        android:textSize="18sp" />
-
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
     <TextView
         android:id="@+id/device_ipAddress"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="5dp"
-        android:layout_marginLeft="10sp"
-        android:layout_marginTop="5dp"
-        android:gravity="center_vertical"
-        android:text="Gerät#1"
-        android:textSize="18sp" />
+        android:textSize="16sp"
+        android:text="Gerät#1" />
+
 
 
     <TextView
         android:id="@+id/device_description"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="5dp"
         android:layout_marginLeft="20sp"
-        android:layout_marginTop="5dp"
-        android:gravity="center_vertical"
-        android:text="192.168.0.33"
-        android:textSize="14sp" />
+        android:textSize="16sp"
+        android:text="192.168.0.33" />
+    </LinearLayout>
+
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
     <TextView
         android:id="@+id/device_down_traffic"
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="5dp"
-        android:layout_marginLeft="30sp"
-        android:layout_marginTop="5dp"
-        android:gravity="center_vertical"
-        android:text="10 MB"
-        android:textSize="14sp" />
+        android:layout_weight="1"
+        android:text="10 MB" />
 
     <TextView
         android:id="@+id/device_up_traffic"
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:layout_marginBottom="5dp"
-        android:layout_marginLeft="40sp"
-        android:layout_marginTop="5dp"
-        android:gravity="center_vertical"
-        android:text="1 MB"
-        android:textSize="14sp" />
+        android:layout_weight="1"
+        android:text="1 MB" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/device_down_limit"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Max. Downspeed: 10000kbit/s" />
+
+        <TextView
+            android:id="@+id/device_up_limit"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Max. Upspeed: 10000kbit/s" />
+    </LinearLayout>
 
 
 </LinearLayout>
