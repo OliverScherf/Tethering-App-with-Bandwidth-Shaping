@@ -44,7 +44,7 @@ public class BluetoothTetheringFragment extends Fragment {
     @Override
     public void onStart() {
         super.onStart();
-        this.bluetoothTethering = new BluetoothTethering(this.getContext(), (ConnectivityManager) this.getActivity().getSystemService(Context.CONNECTIVITY_SERVICE));
+        this.bluetoothTethering = new BluetoothTethering(this.getContext());
         this.bluetoothSwitch = (Switch) this.view.findViewById(R.id.bluetooth_tethering_switch);
         this.bluetoothSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override

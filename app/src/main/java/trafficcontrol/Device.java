@@ -12,15 +12,6 @@ public class Device {
     public int uploadLimit;
     public int downloadLimit;
 
-
-    public Device(String ipAddress, String description, long upTrafficBytes, long downTrafficBytes) {
-        this.ipAddress = ipAddress;
-        this.description = description;
-        this.upTrafficBytes = upTrafficBytes;
-        this.downTrafficBytes = downTrafficBytes;
-        this.uploadLimit = 0;
-    }
-
     public Device(String ipAddress, String description) {
         this.ipAddress = ipAddress;
         this.description = description;

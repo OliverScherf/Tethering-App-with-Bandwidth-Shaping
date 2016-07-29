@@ -17,17 +17,15 @@ import utils.Loggable;
  */
 public class BluetoothTethering implements Loggable {
 
+    private Constructor bluetoothPanConstructor;
     private Method setBluetoothTethering;
     private Method isTetheringOn;
-    private Constructor bluetoothPanConstructor;
     private Context context;
-    private ConnectivityManager connectivityManager;
-    BluetoothProfile panProxy;
+    private BluetoothProfile panProxy;
 
-    public BluetoothTethering(Context context, ConnectivityManager connectivityManager) {
+    public BluetoothTethering(Context context) {
         this.log("new version");
         this.context = context;
-        this.connectivityManager = connectivityManager;
         try {
             Class classBluetoothPan = Class.forName("android.bluetooth.BluetoothPan");
             for (Method method : classBluetoothPan.getDeclaredMethods()) {
@@ -47,18 +45,6 @@ public class BluetoothTethering implements Loggable {
             this.err("Reflection Error", e);
         }
         this.createBluetoothPanInstance();
-    }
-
-    void createBluetoothPanInstance()  {
-        try {
-            this.bluetoothPanConstructor.newInstance(this.context, new BluetoothPanServiceListener(this));
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        }
     }
 
     public void startTethering() {
@@ -105,8 +91,16 @@ public class BluetoothTethering implements Loggable {
         return false;
     }
 
-    public BluetoothProfile getPanProxy() {
-        return panProxy;
+    void createBluetoothPanInstance()  {
+        try {
+            this.bluetoothPanConstructor.newInstance(this.context, new BluetoothPanServiceListener(this));
+        } catch (InstantiationException e) {
+            e.printStackTrace();
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (InvocationTargetException e) {
+            e.printStackTrace();
+        }
     }
 
     public void setPanProxy(BluetoothProfile panProxy) {
@@ -128,7 +122,7 @@ class BluetoothPanServiceListener implements BluetoothProfile.ServiceListener, L
 
     private BluetoothTethering bluetoothTethering;
 
-    BluetoothPanServiceListener(BluetoothTethering bluetoothTethering){
+    public BluetoothPanServiceListener(BluetoothTethering bluetoothTethering){
         this.bluetoothTethering = bluetoothTethering;
     }
 

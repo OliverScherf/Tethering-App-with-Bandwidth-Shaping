@@ -87,16 +87,16 @@ public class TrafficControl implements Loggable {
 
     public void refreshDevices() {
         ArrayList<Device> newDeviceList = new ArrayList<>();
-        newDeviceList.add(this.getCurrentInternetDevice());
+        newDeviceList.add(this.getSmartphoneDevice());
         newDeviceList.addAll(this.getTetheredDevices());
         if (!this.deviceList.equals(newDeviceList)) {
             this.deviceList.clear();
             this.deviceList.addAll(newDeviceList);
-            this.updateIpTables();
+            this.updateCounterChains();
         }
     }
 
-    private void updateIpTables() {
+    private void updateCounterChains() {
         ArrayList<String> cmds = new ArrayList<>(10);
         // TODO: Bei Current Rules könnte mna nach os_ suchen, damit man die unnötigen Regeln erstmal rausfischen kann,
         // das macht auch das löschen einfacher
@@ -140,7 +140,7 @@ public class TrafficControl implements Loggable {
         }
     }
 
-    private Device getCurrentInternetDevice() {
+    private Device getSmartphoneDevice() {
         List<String> lines = null;
         try {
             lines = new ArrayList<>(Arrays.asList(ShellExecutor.getSingleton().executeRoot("ip addr show").split("\n")));
@@ -152,15 +152,15 @@ public class TrafficControl implements Loggable {
         for (String s : lines) {
             String ip = this.extractIpAddress(s);
             if (ip != null) {
-                String iface = this.extractIface(s);
+                String iface = this.extractInterface(s);
                 return new Device(ip, iface);
             }
         }
         throw new RuntimeException("Couldn't get current internet device.");
     }
 
-    private List<Device> getTetheredDevices() {
-        List<Device> devices = new ArrayList<>();
+    private ArrayList<Device> getTetheredDevices() {
+        ArrayList<Device> devices = new ArrayList<>();
         ArrayList<String> lines = null;
         try {
             lines = new ArrayList<>(Arrays.asList(ShellExecutor.getSingleton().executeRoot("cat /proc/net/arp").split("\n")));
@@ -176,14 +176,14 @@ public class TrafficControl implements Loggable {
         for (String s : lines) {
             String ip = this.extractIpAddress(s);
             if (ip != null) {
-                String iface = this.extractIface(s);
+                String iface = this.extractInterface(s);
                 devices.add(new Device(ip, iface));
             }
         }
         return devices;
     }
 
-    public synchronized void refreshTrafficStats() {
+    public void refreshTrafficStats() {
         // Alles holen, schauen ob die IP in der Zeile verbunden ist, wenn ja Bytes extrahieren
         try {
             String[] downloadArr = ShellExecutor.getSingleton().executeRoot("iptables -v -x -n -L os_count_inp").split("\n");
@@ -192,13 +192,13 @@ public class TrafficControl implements Loggable {
             Device ownD = this.deviceList.get(0);
             for (String line : downloadArr) {
                 if (ownD.ipAddress.equals(this.extractIpAddress(line))) {
-                    ownD.downTrafficBytes = this.extractBytes(line);
+                    ownD.downTrafficBytes = this.extractKibiBytes(line);
                     break;
                 }
             }
             for (String line : uploadArr) {
                 if (ownD.ipAddress.equals(this.extractIpAddress(line))) {
-                    ownD.upTrafficBytes = this.extractBytes(line);
+                    ownD.upTrafficBytes = this.extractKibiBytes(line);
                     break;
                 }
             }
@@ -208,10 +208,10 @@ public class TrafficControl implements Loggable {
                     // wir brauchen eine Methode die Dest und eine die Src sucht
                     if (line.contains(d.ipAddress)) {
                         if (this.isLineDownloadCounter(line, d)) {
-                            d.downTrafficBytes = this.extractBytes(line);
+                            d.downTrafficBytes = this.extractKibiBytes(line);
                             break;
                         } else if (this.isLineUploadCounter(line, d)) {
-                            d.upTrafficBytes = this.extractBytes(line);
+                            d.upTrafficBytes = this.extractKibiBytes(line);
                             break;
                         }
                     }
@@ -236,7 +236,7 @@ public class TrafficControl implements Loggable {
     }
 
 
-    private long extractBytes(String line) {
+    private long extractKibiBytes(String line) {
         try {
             int firstPaketDigitIndex = -1;
             int lastPaketDigitIndex = -1;
@@ -281,7 +281,7 @@ public class TrafficControl implements Loggable {
         }
     }
 
-    private String extractIface(String line) {
+    private String extractInterface(String line) {
         int indexOfGlobal = line.indexOf("global");
         if (indexOfGlobal != -1) {
             return line.substring(indexOfGlobal + "global".length() + 1);
@@ -307,17 +307,6 @@ public class TrafficControl implements Loggable {
             }
         }
         return null;
-    }
-
-
-    @Override
-    public void log(String msg) {
-        Log.d("TrafficControl", msg);
-    }
-
-    @Override
-    public void err(String msg, Throwable t) {
-        Log.d("TrafficControl", msg, t);
     }
 
     public void writeLimitRule(Device d, int downloadLimit, int uploadLimit) {
@@ -452,7 +441,7 @@ public class TrafficControl implements Loggable {
         }
         int limitInt = Integer.parseInt(limit);
         return limitInt * 1400 / 125;
-   }
+    }
 
     public void resetCounters() {
         try {
@@ -466,5 +455,16 @@ public class TrafficControl implements Loggable {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+
+    @Override
+    public void log(String msg) {
+        Log.d("TrafficControl", msg);
+    }
+
+    @Override
+    public void err(String msg, Throwable t) {
+        Log.d("TrafficControl", msg, t);
     }
 }
