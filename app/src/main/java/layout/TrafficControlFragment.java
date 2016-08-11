@@ -16,7 +16,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
-import com.oliverscherf.tetheringwithbandwidthshaping.R;
+import com.oliverscherf.tetheringwithtrafficcontrol.R;
 
 import java.util.ArrayList;
 

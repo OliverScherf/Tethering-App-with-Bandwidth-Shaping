@@ -15,10 +15,9 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Switch;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.oliverscherf.tetheringwithbandwidthshaping.R;
+import com.oliverscherf.tetheringwithtrafficcontrol.R;
 
 import java.lang.reflect.Field;
 

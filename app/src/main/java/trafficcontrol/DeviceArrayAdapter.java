@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.TextView;
 
-import com.oliverscherf.tetheringwithbandwidthshaping.R;
+import com.oliverscherf.tetheringwithtrafficcontrol.R;
 
 import java.util.List;
 

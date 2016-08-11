@@ -1,4 +1,4 @@
-package com.oliverscherf.tetheringwithbandwidthshaping;
+package com.oliverscherf.tetheringwithtrafficcontrol;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;

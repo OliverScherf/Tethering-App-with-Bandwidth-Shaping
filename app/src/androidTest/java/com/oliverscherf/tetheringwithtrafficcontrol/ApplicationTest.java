@@ -1,4 +1,4 @@
-package com.oliverscherf.tetheringwithbandwidthshaping;
+package com.oliverscherf.tetheringwithtrafficcontrol;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

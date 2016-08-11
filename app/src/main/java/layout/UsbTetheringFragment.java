@@ -11,7 +11,7 @@ import android.view.ViewGroup;
 import android.widget.CompoundButton;
 import android.widget.Switch;
 
-import com.oliverscherf.tetheringwithbandwidthshaping.R;
+import com.oliverscherf.tetheringwithtrafficcontrol.R;
 
 import tethering.UsbTethering;
 
