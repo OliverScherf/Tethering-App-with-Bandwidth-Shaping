@@ -26,7 +26,6 @@ public class BluetoothTetheringFragment extends Fragment {
         // Required empty public constructor
     }
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -36,15 +35,9 @@ public class BluetoothTetheringFragment extends Fragment {
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        this.bluetoothSwitch.setChecked(this.bluetoothTethering.isBluetoothTetheringEnabled());
-    }
-
-    @Override
     public void onStart() {
         super.onStart();
-        this.bluetoothTethering = new BluetoothTethering(this.getContext());
+        this.bluetoothTethering = new BluetoothTethering(this.getContext(), (ConnectivityManager) this.getContext().getSystemService(Context.CONNECTIVITY_SERVICE));
         this.bluetoothSwitch = (Switch) this.view.findViewById(R.id.bluetooth_tethering_switch);
         this.bluetoothSwitch.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override

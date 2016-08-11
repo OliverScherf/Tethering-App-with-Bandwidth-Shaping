@@ -1,7 +1,9 @@
 package layout;
 
 
+import android.app.Activity;
 import android.app.Dialog;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.util.Log;
@@ -30,18 +32,31 @@ public class TrafficControlFragment extends Fragment {
     private View view;
     private ListView deviceListView;
     private DeviceArrayAdapter adapter;
-    private Button refreshButton;
-    private Button resetCountersButton;
-    private Button deleteAllRules;
     private TrafficControl trafficControl;
-    private Button refreshTraffic;
+    private TrafficStatsRefresher refresher;
 
     public TrafficControlFragment() {
         // Required empty public constructor
     }
 
+    @Override
+    public void onStop() {
+        Log.d("LOL", "stopped");
+        this.refresher.cancel(true);
+        super.onStop();
+    }
 
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (!this.refresher.isCancelled()) {
+            this.refresher.cancel(true);
+        }
+        this.refresher = new TrafficStatsRefresher((Activity) this.getContext());
+        this.refresher.execute(null, null, null);
+
+    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -52,12 +67,10 @@ public class TrafficControlFragment extends Fragment {
     }
 
     private void init() {
-        Log.d("LLO","New Version11111");
         this.deviceListView = (ListView) this.view.findViewById(R.id.device_list_view);
-        this.refreshButton = (Button) this.view.findViewById(R.id.connected_devices_refresh_button);
-        this.refreshTraffic = (Button) this.view.findViewById(R.id.refresh_traffic_button);
-        this.resetCountersButton = (Button) this.view.findViewById(R.id.reset_counters_button);
-        this.deleteAllRules = (Button) this.view.findViewById(R.id.delete_all_rules_button);
+        Button refreshButton = (Button) this.view.findViewById(R.id.connected_devices_refresh_button);
+        Button resetCountersButton = (Button) this.view.findViewById(R.id.reset_counters_button);
+        Button deleteAllRules = (Button) this.view.findViewById(R.id.delete_all_rules_button);
         final ArrayList<Device> strArr = new ArrayList<Device>();
         this.trafficControl = new TrafficControl(strArr);
         this.adapter = new DeviceArrayAdapter(this.getContext(), R.layout.device_row, strArr);
@@ -65,45 +78,39 @@ public class TrafficControlFragment extends Fragment {
         this.deviceListView.setAdapter(this.adapter);
         this.deviceListView.setOnItemClickListener(this.openTrafficControlDialog());
 
-        this.refreshButton.setOnClickListener(new View.OnClickListener() {
+        refreshButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                trafficControl.refreshDevices();
-                trafficControl.refreshTrafficStats();
+                trafficControl.refreshConnectedDevices();
+                trafficControl.refreshTrafficCounter();
                 adapter.notifyDataSetChanged();
                 Toast.makeText(TrafficControlFragment.this.getContext(), "Devices refreshed", Toast.LENGTH_SHORT).show();
             }
         });
-        this.refreshTraffic.setOnClickListener(new View.OnClickListener() {
+        resetCountersButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                trafficControl.refreshTrafficStats();
-                adapter.notifyDataSetChanged();
-                Toast.makeText(TrafficControlFragment.this.getContext(), "Traffic Counter refreshed", Toast.LENGTH_SHORT).show();
-            }
-        });
-        this.resetCountersButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                trafficControl.resetCounters();
-                trafficControl.refreshTrafficStats();
+                trafficControl.resetTrafficCounter();
+                trafficControl.refreshTrafficCounter();
                 adapter.notifyDataSetChanged();
                 Toast.makeText(TrafficControlFragment.this.getContext(), "Traffic Counter resetted", Toast.LENGTH_SHORT).show();
             }
         });
-        this.deleteAllRules.setOnClickListener(new View.OnClickListener() {
+        deleteAllRules.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                trafficControl.deleteAllLimitRules();
+                trafficControl.removeAllSpeedLimits();
                 adapter.notifyDataSetChanged();
                 Toast.makeText(TrafficControlFragment.this.getContext(), "All Rules deleted", Toast.LENGTH_SHORT).show();
             }
         });
 
-        trafficControl.refreshDevices();
-        trafficControl.refreshTrafficStats();
-        trafficControl.parseLimits();
-        adapter.notifyDataSetChanged();
+        this.trafficControl.refreshConnectedDevices();
+        this.trafficControl.refreshTrafficCounter();
+        this.trafficControl.parseSpeedLimits();
+        this.adapter.notifyDataSetChanged();
+        this.refresher = new TrafficStatsRefresher((Activity) this.getContext());
+        this.refresher.execute(null, null, null);
     }
 
     public AdapterView.OnItemClickListener openTrafficControlDialog() {
@@ -111,6 +118,9 @@ public class TrafficControlFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 final Device d = (Device) deviceListView.getItemAtPosition(position);
+                if (d.ipAddress.equals("-")) {
+                    return;
+                }
                 final Dialog dialog = new Dialog(getContext());
                 dialog.setContentView(R.layout.traffic_limit_dialog);
                 final EditText downloadLimit = (EditText) dialog.findViewById(R.id.download_limit);
@@ -135,7 +145,7 @@ public class TrafficControlFragment extends Fragment {
                                     || downloadLimitInt > 100000 || uploadLimitInt > 100000) {
                                 throw new Exception();
                             }
-                            trafficControl.writeLimitRule(d, downloadLimitInt, uploadLimitInt);
+                            trafficControl.setSpeedLimits(d, downloadLimitInt, uploadLimitInt);
                         } catch (Exception e) {
                             Toast.makeText(TrafficControlFragment.this.getContext(), "Invalid limit", Toast.LENGTH_SHORT).show();
                             dialog.dismiss();
@@ -146,7 +156,7 @@ public class TrafficControlFragment extends Fragment {
                 deleteExistingRule.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view2) {
-                        trafficControl.deleteLimitRules(d);
+                        trafficControl.removeSpeedLimits(d);
                         adapter.notifyDataSetChanged();
                         dialog.dismiss();
                     }
@@ -160,5 +170,38 @@ public class TrafficControlFragment extends Fragment {
             }
         };
         return listener;
+    }
+
+    private class TrafficStatsRefresher extends AsyncTask<Integer, Integer, Integer> {
+
+        private Activity activity;
+
+        TrafficStatsRefresher(Activity activity) {
+            super();
+            this.activity = activity;
+        }
+
+        @Override
+        protected Integer doInBackground(Integer... params) {
+            while (true) {
+                try {
+                    Thread.sleep(1000);
+                    trafficControl.refreshTrafficCounter();
+                    Log.d("LOL", "Its refreshed!");
+                } catch (InterruptedException e) {
+                    break;
+                }
+                if (this.isCancelled()) {
+                    break;
+                }
+                activity.runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        adapter.notifyDataSetChanged();
+                    }
+                });
+            }
+            return 0;
+        }
     }
 }

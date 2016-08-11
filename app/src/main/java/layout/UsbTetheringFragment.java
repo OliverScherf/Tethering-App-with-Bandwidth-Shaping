@@ -35,7 +35,7 @@ public class UsbTetheringFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        this.usbTetheringSwitch.setChecked(this.usbTethering.isUsbTetheringEnabled());
+        this.usbTetheringSwitch.setChecked(this.usbTethering.isTetheringEnabled());
     }
 
     @Override

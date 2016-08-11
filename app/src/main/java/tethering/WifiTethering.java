@@ -35,19 +35,15 @@ public class WifiTethering implements Loggable {
     public WifiTethering(WifiManager wifiManager) {
         this.wifiManager = wifiManager;
         for (Method method : this.wifiManager.getClass().getDeclaredMethods()) {
-            try {
-                if (method.getName().equals("setWifiApEnabled")) {
-                    this.setWifiApEnabled = method;
-                } else if (method.getName().equals("isWifiApEnabled")) {
-                    this.isWifiApEnabled = method;
-                } else if (method.getName().equals("getWifiApConfiguration")) {
-                    this.getWifiApConfiguration = method;
-                }
-            } catch (Exception ex) {
-                this.err("Exception while iterate though the methods of the WifiManager. ", ex);
+            if (method.getName().equals("setWifiApEnabled")) {
+                this.setWifiApEnabled = method;
+            } else if (method.getName().equals("isWifiApEnabled")) {
+                this.isWifiApEnabled = method;
+            } else if (method.getName().equals("getWifiApConfiguration")) {
+                this.getWifiApConfiguration = method;
             }
         }
-        this.setInitialWifiSettings();
+        this.config = this.getWifiApConfig();
     }
 
     public void startTethering(String ssid, String password, boolean hiddenSSID, boolean encryption, int broadcastChannel) {
@@ -72,7 +68,7 @@ public class WifiTethering implements Loggable {
         return null;
     }
 
-    public boolean isWifiApEnabled() {
+    public boolean isTetheringEnabled() {
         try {
             return (boolean) this.isWifiApEnabled.invoke(this.wifiManager);
         } catch (IllegalAccessException e) {
@@ -83,35 +79,12 @@ public class WifiTethering implements Loggable {
         return false;
     }
 
-    private void setInitialWifiSettings() {
-        try {
-            this.config = (WifiConfiguration) this.getWifiApConfiguration.invoke(this.wifiManager);
-        } catch (IllegalAccessException e) {
-            this.err("Reflection Error", e);
-        } catch (InvocationTargetException e) {
-            this.err("Reflection Error", e);
-        }
-    }
-
-    private void updateBroadcastChannel(int channelNumber) {
-        for (Field f : this.config.getClass().getFields()) {
-            this.log(f.getName());
-            if (f.getName().equals("channel")) {
-                try {
-                    f.setInt(this.config, channelNumber);
-                } catch (IllegalAccessException e) {
-                    this.err("Reflection Error", e);
-                }
-            }
-        }
-    }
-
     private void updateConfig(String ssid, String password, boolean hiddenSSID, boolean encryption, int broadcastChannel) {
         this.config.SSID = ssid;
         this.config.hiddenSSID = hiddenSSID;
-        if (encryption) {
+        if (!encryption) {
             this.log("Open/Unsecure");
-            this.config.allowedKeyManagement.set(4, false);
+            this.config.allowedKeyManagement.set(WPA2_PSK2, false);
             this.config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
         } else {
             this.log("WPA2 PSK");
@@ -119,8 +92,13 @@ public class WifiTethering implements Loggable {
             this.config.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE, false);
             this.config.allowedKeyManagement.set(WPA2_PSK2);
         }
-        this.updateBroadcastChannel(broadcastChannel);
-        this.wifiManager.saveConfiguration();
+        try {
+            this.config.getClass().getField("channel").setInt(this.config, broadcastChannel);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
     }
 
     public void stopTethering() {

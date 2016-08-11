@@ -49,7 +49,7 @@ public class WifiTetheringFragment extends Fragment {
 
     private void updateConfig() {
         WifiConfiguration config = this.wifiTethering.getWifiApConfig();
-        ((Switch) this.view.findViewById(R.id.wifi_tethering_switch)).setChecked(this.wifiTethering.isWifiApEnabled());
+        ((Switch) this.view.findViewById(R.id.wifi_tethering_switch)).setChecked(this.wifiTethering.isTetheringEnabled());
         ((EditText) this.view.findViewById(R.id.wifi_ssid_edit_text)).setText(config.SSID);
         ((EditText) this.view.findViewById(R.id.wifi_password_edit_text)).setText(config.preSharedKey);
         ((CheckBox) this.view.findViewById(R.id.wifi_hide_ssid_check_box)).setChecked(config.hiddenSSID);

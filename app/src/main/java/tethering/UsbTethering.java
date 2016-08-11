@@ -2,10 +2,6 @@ package tethering;
 
 import android.net.ConnectivityManager;
 import android.util.Log;
-import android.view.View;
-import android.widget.EditText;
-
-import com.oliverscherf.tetheringwithbandwidthshaping.R;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -27,7 +23,7 @@ public class UsbTethering implements Loggable {
         for (Method method : this.connectivityManager.getClass().getDeclaredMethods()) {
             if (method.getName().equals("tether")) {
                 this.tether = method;
-            } else if(method.getName().equals("untether")) {
+            } else if (method.getName().equals("untether")) {
                 this.untether = method;
             } else if (method.getName().equals("getTetheredIfaces")) {
                 this.getTetheredIfaces = method;
@@ -36,11 +32,11 @@ public class UsbTethering implements Loggable {
     }
 
     public void startTethering() {
-        if (this.isUsbTetheringEnabled()) {
+        if (this.isTetheringEnabled()) {
             return;
         }
         try {
-            String execRet = ShellExecutor.getSingleton().executeRoot("getprop sys.usb.config");
+            String execRet = ShellExecutor.executeRoot("getprop sys.usb.config");
             if (execRet.contains("mtp")) {
                 this.oldUsbFunction = "mtp";
             } else if (execRet.contains("ptp")) {
@@ -55,7 +51,7 @@ public class UsbTethering implements Loggable {
         }
 
         try {
-            ShellExecutor.getSingleton().executeRoot("setprop sys.usb.config rndis,adb");
+            ShellExecutor.executeRoot("setprop sys.usb.config rndis,adb");
             Thread.sleep(100);
             this.tether.invoke(this.connectivityManager, "rndis0");
             // http://redmine.replicant.us/attachments/435/replicant_usb_networking_device.sh
@@ -80,7 +76,7 @@ public class UsbTethering implements Loggable {
             this.oldUsbFunction = "mtp";
         }
         try {
-            ShellExecutor.getSingleton().executeRoot("setprop sys.usb.config " + this.oldUsbFunction + ",adb");
+            ShellExecutor.executeRoot("setprop sys.usb.config " + this.oldUsbFunction + ",adb");
         } catch (IOException e) {
             e.printStackTrace();
         } catch (InterruptedException e) {
@@ -88,7 +84,8 @@ public class UsbTethering implements Loggable {
         }
     }
 
-    public boolean isUsbTetheringEnabled() {
+    //  Membervariablen von TetherSettings.java
+    public boolean isTetheringEnabled() {
         try {
             String[] tethInf = (String[]) this.getTetheredIfaces.invoke(this.connectivityManager);
             for (String inf : tethInf) {
@@ -115,3 +112,12 @@ public class UsbTethering implements Loggable {
         Log.e("UsbTethering", msg, t);
     }
 }
+
+
+
+
+
+
+
+
+
